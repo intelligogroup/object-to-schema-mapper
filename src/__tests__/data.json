@@ -1,7 +1,7 @@
 {
     "person": {
-      "name": "maxim",
-      "last_name": "golman",
+      "name": "john",
+      "last_name": "doe",
       "weight": 74.5,
       "education": null,
       "misc": {
@@ -12,13 +12,13 @@
       },
       "addresses": [
         {
-          "city": "bet shemesh",
-          "street": "haarazim",
-          "number": 56
+          "city": "some city 1",
+          "street": "some street 1",
+          "number": 55
         },
         {
-          "city": "ramat gan",
-          "number": 112
+          "city": "some city 2",
+          "number": 87
         }
       ],
       "isAlive": true
