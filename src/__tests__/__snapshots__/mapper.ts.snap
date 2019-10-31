@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`mapper tests mapper maps object to schema correctly: inputDataMapper 1`] = `
+Object {
+  "person": Object {
+    "addresses": Array [
+      Object {
+        "city": "{\\"type\\":\\"string\\"}",
+        "number": "{\\"type\\":\\"number\\"}",
+        "street": "{\\"type\\":\\"string\\"}",
+      },
+    ],
+    "education": "unknown type",
+    "isAlive": "{\\"type\\":\\"boolean\\"}",
+    "last_name": "{\\"type\\":\\"string\\"}",
+    "misc": Object {
+      "pastLife": Object {
+        "1200-1800": "{\\"type\\":\\"string\\"}",
+        "1801-1900": "{\\"type\\":\\"string\\"}",
+      },
+    },
+    "name": "{\\"type\\":\\"string\\"}",
+    "weight": "{\\"type\\":\\"number\\"}",
+  },
+}
+`;

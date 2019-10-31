@@ -1,0 +1,26 @@
+{
+    "person": {
+      "name": "maxim",
+      "last_name": "golman",
+      "weight": 74.5,
+      "education": null,
+      "misc": {
+        "pastLife": {
+          "1200-1800": "vampire",
+          "1801-1900": "old-vampire"
+        }
+      },
+      "addresses": [
+        {
+          "city": "bet shemesh",
+          "street": "haarazim",
+          "number": 56
+        },
+        {
+          "city": "ramat gan",
+          "number": 112
+        }
+      ],
+      "isAlive": true
+    }
+  }
