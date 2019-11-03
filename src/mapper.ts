@@ -1,26 +1,11 @@
-import { SomeObj } from './utils/types';
-import { resolveType } from './utils/objectUtil';
+import { SomeObj, ValArchtype } from './utils/types';
+import { resolveValueArchtype, resolveType } from './utils/objectUtil';
 
 function mapObjectToSchema(obj: SomeObj, schema: SomeObj = {}): SomeObj {
     return Object
         .keys(obj)
         .reduce(
-            (schema, key) => {
-                const type = resolveType(obj[key]);
-                switch (type) {
-                    case 'UNDEFINED':
-                    case 'NULL':
-                        return handleEmptyValue(schema, key);
-                    case 'STRING':
-                    case 'NUMBER':
-                    case 'BOOLEAN':
-                        return simpleType(type, schema, key);
-                    case 'ARRAY':
-                        return Object.assign(schema, { [key]: [arrayOfObjectsToSchema(obj[key], {})] });
-                    case 'OBJECT':
-                        return Object.assign(schema, { [key]: mapObjectToSchema(obj[key], {}) });
-                }
-            },
+            (schema, key) => resolveOperation(schema, obj, key, resolveValueArchtype(obj[key])),
             schema
         );
 }
@@ -33,8 +18,35 @@ function handleEmptyValue(schema: SomeObj, key: string) {
     return schema;
 }
 
-function arrayOfObjectsToSchema(objArray: [SomeObj], schema: SomeObj): SomeObj {
-    return objArray.reduce((acc, obj) => mapObjectToSchema(obj, acc), schema);
+function resolveOperation(schema: SomeObj, obj: any, key: string, archType: ValArchtype): SomeObj {
+    switch (archType) {
+        case 'EMPTY':
+            return handleEmptyValue(schema, key);
+        case 'SIMPLE':
+            return simpleType(resolveType(obj[key]), schema, key);
+        case 'ARRAY':
+            return Object.assign(schema, { [key]: [arrayOfObjectsToSchema(obj[key], {})] });
+        case 'OBJECT':
+            return Object.assign(schema, { [key]: mapObjectToSchema(obj[key], {}) });
+    }
+}
+
+function arrayOfObjectsToSchema(objArray: [any], schema: SomeObj): SomeObj {
+    return objArray.reduce(
+        (acc, obj) => {
+            const archType = resolveValueArchtype(obj);
+            switch (archType) {
+                case 'SIMPLE':
+                case 'EMPTY':
+                    return JSON.stringify({ type: resolveType(obj) });
+                case 'OBJECT':
+                    return mapObjectToSchema(obj, acc);
+                case 'ARRAY':
+                    return [arrayOfObjectsToSchema(obj, schema)]
+            }
+        },
+        schema
+    );
 }
 
 function simpleType(type: string, schema: SomeObj, key: string) {

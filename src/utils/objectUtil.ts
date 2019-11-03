@@ -1,6 +1,21 @@
-import { SomeObj, ValType } from './types'
+import { ValType, ValArchtype } from './types'
 
-function resolveType(value: SomeObj): ValType {
+function resolveValueArchtype(value: any): ValArchtype {
+    const type = resolveType(value);
+    switch (type) {
+        case 'NULL':
+        case 'UNDEFINED':
+            return 'EMPTY';
+        case 'NUMBER':
+        case 'BOOLEAN':
+        case 'STRING':
+            return 'SIMPLE';
+        default:
+            return type;
+    }
+}
+
+function resolveType(value: any): ValType {
     if (value == null) {
         return 'NULL';
     }
@@ -25,4 +40,4 @@ function resolveType(value: SomeObj): ValType {
     return 'UNDEFINED';
 }
 
-export { resolveType };
+export { resolveType, resolveValueArchtype };

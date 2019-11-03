@@ -2,7 +2,8 @@
   "name": "object-to-schema",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/mapper",
+  "types": "dist/mapper.d.ts",
   "scripts": {
     "test": "jest"
   },
@@ -13,5 +14,6 @@
     "jest": "^24.9.0",
     "ts-jest": "^24.1.0",
     "typescript": "^3.6.4"
-  }
+  },
+  "dependencies": {}
 }
