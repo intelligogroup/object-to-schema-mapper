@@ -1,11 +1,11 @@
-import { SomeObj, ValArchtype } from './utils/types';
+import { SomeObj } from './utils/types';
 import { resolveValueArchtype, resolveType } from './utils/objectUtil';
 
 function mapObjectToSchema(obj: SomeObj, schema: SomeObj = {}): SomeObj {
     return Object
         .keys(obj)
         .reduce(
-            (schema, key) => resolveOperation(schema, obj, key, resolveValueArchtype(obj[key])),
+            (schema, key) => resolveOperation(schema, obj, key),
             schema
         );
 }
@@ -18,43 +18,37 @@ function handleEmptyValue(schema: SomeObj, key: string) {
     return schema;
 }
 
-function resolveOperation(schema: SomeObj, obj: any, key: string, archType: ValArchtype): SomeObj {
+function resolveOperation(schema: SomeObj, obj: any, key: string): SomeObj {
+    const nestedValue = obj[key];
+    const archType = resolveValueArchtype(nestedValue);
     switch (archType) {
         case 'EMPTY':
             return handleEmptyValue(schema, key);
         case 'SIMPLE':
-            return simpleType(resolveType(obj[key]), schema, key);
+            const type = resolveType(nestedValue);
+            return simpleType(type, key, schema);
         case 'ARRAY':
-            return Object.assign(schema, { [key]: [arrayOfObjectsToSchema(obj[key], {})] });
+            return Object.assign(schema, { [key]: [arrayOfObjectsToSchema(nestedValue, schema[key])] });
         case 'OBJECT':
-            return Object.assign(schema, { [key]: mapObjectToSchema(obj[key], {}) });
+            return Object.assign(schema, { [key]: mapObjectToSchema(nestedValue, schema[key]) });
     }
 }
 
-function arrayOfObjectsToSchema(objArray: [any], schema: SomeObj): SomeObj {
-    return objArray.reduce(
-        (acc, obj) => {
-            const archType = resolveValueArchtype(obj);
-            switch (archType) {
-                case 'SIMPLE':
-                case 'EMPTY':
-                    return JSON.stringify({ type: resolveType(obj) });
-                case 'OBJECT':
-                    return mapObjectToSchema(obj, acc);
-                case 'ARRAY':
-                    return [arrayOfObjectsToSchema(obj, schema)]
-            }
-        },
+function arrayOfObjectsToSchema(array: [any], schema: SomeObj = {}): SomeObj {
+    return array.reduce(
+        (acc, obj) => resolveValueArchtype(obj) == 'OBJECT'
+            ? mapObjectToSchema(obj, acc)
+            : JSON.stringify({ type: resolveType(obj).toLowerCase() }),
         schema
     );
 }
 
-function simpleType(type: string, schema: SomeObj, key: string) {
+function simpleType(type: string, key: string, schema: SomeObj) {
     return Object.assign(schema, { [key]: JSON.stringify({ type: type.toLowerCase() }) });
 }
 
 function unknownType(schema: SomeObj, key: string) {
-    return Object.assign(schema, { [key]: 'unknown type' });
+    return Object.assign(schema, { [key]: JSON.stringify({ type: 'unknown' }) });
 }
 
 export { mapObjectToSchema };
