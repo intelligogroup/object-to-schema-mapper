@@ -28,9 +28,9 @@ function resolveOperation(schema: SomeObj, obj: any, key: string): SomeObj {
             const type = resolveType(nestedValue);
             return simpleType(type, key, schema);
         case 'ARRAY':
-            return Object.assign(schema, { [key]: [arrayOfObjectsToSchema(nestedValue, schema[key])] });
+            return Object.assign(schema, { [key]: [arrayOfObjectsToSchema(nestedValue, {})] });
         case 'OBJECT':
-            return Object.assign(schema, { [key]: mapObjectToSchema(nestedValue, schema[key]) });
+            return Object.assign(schema, { [key]: mapObjectToSchema(nestedValue, {}) });
     }
 }
 
