@@ -1,6 +1,6 @@
 
 import data = require('./data.json');
-import { mapObjectToSchema } from '../mapper';
+import { mapObjectToSchema } from '../objectToSchemaTransformer';
 
 describe('mapper tests', () => {
 
