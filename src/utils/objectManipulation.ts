@@ -1,6 +1,6 @@
-type Path = [string];
+type Path = string[];
 
-const getNestedValue = (obj: any) => (path: Array<string>): any => {
+const getNestedValue = (obj: any) => (path: string[]): any => {
     if (obj == null) {
         return null;
     }
@@ -12,9 +12,22 @@ const getNestedValue = (obj: any) => (path: Array<string>): any => {
             : null;
 };
 
+const setNestedValue = (obj: any, value: any) => (path: string[]): any => {
+    if (obj == null) {
+        return null;
+    }
+    const [key, ...nextKeys] = path;
+    if (!Object.keys(obj).includes(key)) {
+        obj.key = null;
+    }
+    return nextKeys.length > 0
+        ? setNestedValue(obj[key], value)(nextKeys)
+        : Object.assign(obj, { [key]: value });
+}
+
 const isNonEmptyString = (str: string) => str.trim().length > 0;
 
-const getFromArray = (arr: Array<any>) => (path: Path): Array<any> => {
+const getFromArray = (arr: any[]) => (path: Path): any[] => {
     if (arr == null) {
         return [];
     } else if (path != null) {
@@ -24,11 +37,18 @@ const getFromArray = (arr: Array<any>) => (path: Path): Array<any> => {
     }
 };
 
-const getSeveral = (obj: any) => (pathArray: Array<Path>): any => {
+const getSeveral = (obj: any) => (pathArray: Path[]): any => {
     if (obj == null) {
         return [];
     } else if (Array.isArray(obj)) {
-        return pathArray.map(path => getFromArray(obj)(path));
+        const keysToExtract = pathArray.reduce((acc, elm) => [...acc, ...elm], []);
+        return obj
+            .map(source =>
+                Object
+                    .keys(source)
+                    .filter(key => keysToExtract.includes(key))
+                    .reduce((acc, key) => ({ ...acc, ...{ [key]: source[key] } }), {})
+            )
     } else {
         return obj == null ? [] : pathArray.map(path => getNestedValue(obj)(path));
     }
@@ -65,12 +85,12 @@ const NestedOfObject = function (root: object) {
         return this;
     }
 
-    this.several = (pathArray: Array<Path>) => {
+    this.several = (pathArray: Path[]) => {
         this.addOperation({ fn: getSeveral, path: pathArray });
         return this;
     }
 
-    this.filterNullsInArray = (arr: Array<any>) =>
+    this.filterNullsInArray = (arr: any[]) =>
         arr.map(
             inner => Array.isArray(inner)
                 ? inner.filter(el => el != null)

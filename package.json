@@ -11,11 +11,13 @@
   "license": "ISC",
   "devDependencies": {
     "@types/jest": "^24.0.21",
+    "@types/ramda": "github:types/npm-ramda#dist",
     "jest": "^24.9.0",
     "ts-jest": "^24.1.0",
     "typescript": "^3.6.4"
   },
   "dependencies": {
-    "object-path": "^0.11.4"
+    "object-path": "^0.11.4",
+    "ramda": "^0.26.1"
   }
 }
