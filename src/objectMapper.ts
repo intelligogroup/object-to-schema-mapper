@@ -3,19 +3,18 @@ import * as R from 'ramda';
 import { SomeObj, Transform } from './utils/types';
 
 function mapObject(originalObj: SomeObj, transformations: Transform[]) {
-    const pathTree = buildTree(transformations);
-    const targetObject = createTargetObject(pathTree, transformations, originalObj);
-    return targetObject;
+    return createTargetObject(transformations, originalObj);
 }
 
 function createTargetObject(
-    extractionTree: SomeObj,
     transformations: Transform[],
     originalObj: SomeObj,
     targetObject: SomeObj = {}
 ) {
+    const extractionTree = buildTree(transformations);
     const [treeEntries, treeLeafs] = R.partition(isTargetValue(), Object.entries(extractionTree));
 
+    // treat leaves
     treeLeafs.forEach(([source, mappingsArray]) => {
         mappingsArray.forEach(target => {
             const valueToSet = objectPath.get(originalObj, unUnidotify(source));
@@ -23,27 +22,44 @@ function createTargetObject(
         });
     });
 
-    treeEntries.forEach(([source, mappingTree]) => {
+    // treat nested entries
+    treeEntries.forEach(([source, _]) => {
         const arrayOfOriginalSubObjs = objectPath.get(originalObj, source);
-        const immediateTargets = getImmediateTargets(transformations, source); // TODO: needs fixin'
-        immediateTargets.forEach((immediateTarget => {
+        const immediateTargets = getSubTransformations(transformations, source);
+        immediateTargets.forEach(({ superTarget, transforms }) => {
             arrayOfOriginalSubObjs.forEach(originalSubObj => {
-                objectPath.push(targetObject, immediateTarget, createTargetObject(mappingTree, transformations, originalSubObj));
+                objectPath.push(targetObject, superTarget, createTargetObject(transforms, originalSubObj));
             });
-        }));
+        });
     });
 
     return targetObject;
 }
 
-function getImmediateTargets(transformations: Transform[], immediateSource: string) {
-    return transformations
+function getSubTransformations(transformations: Transform[], immediateSource: string) {
+    const immediateTargets = transformations
         .filter(transform => transform.source.includes(immediateSource))
         .map(transform => {
-            const index = transform.source.split('[].').indexOf(immediateSource); // TODO: needs fixin'
-            return transform.target.split('[].')[index];
+            const sourceSplit = transform.source.split('[].')
+            const targetSplit = transform.target.split('[].');
+            const idxOfNesting = sourceSplit.indexOf(immediateSource);
+            return {
+                superTarget: targetSplit[idxOfNesting],
+                innerTransformation: {
+                    source: sourceSplit.slice(idxOfNesting + 1).join('[].'),
+                    target: targetSplit.slice(idxOfNesting + 1).join('[].')
+                }
+            };
         })
         .filter(unique);
+
+    const groupedTransforms = R.groupBy(target => target.superTarget, immediateTargets);
+    return Object
+        .entries(groupedTransforms)
+        .map(([superTarget, value]) => ({
+            superTarget,
+            transforms: value.map(el => el.innerTransformation)
+        }));
 }
 
 function unique(val, idx, arr) {
@@ -135,12 +151,8 @@ const a = mapObject(aa,
             target: "jobs.lastPosition"
         },
         {
-            source: "person.taho[].nd.test",
-            target: "some.time[].test.h"
-        },
-        {
             source: "person.taho[].id",
-            target: "other[].id"
+            target: "other[].transformedId"
         },
         {
             source: "person.taho[].test[].a",
