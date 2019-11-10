@@ -1,5 +1,9 @@
 import { ValType, ValArchtype } from './types'
 
+function unique(val, idx, arr) {
+    return arr.indexOf(val) === idx;
+}
+
 function resolveValueArchtype(value: any): ValArchtype {
     const type = resolveType(value);
     switch (type) {
@@ -40,4 +44,8 @@ function resolveType(value: any): ValType {
     return 'UNDEFINED';
 }
 
-export { resolveType, resolveValueArchtype };
+export {
+    unique,
+    resolveType,
+    resolveValueArchtype,
+};

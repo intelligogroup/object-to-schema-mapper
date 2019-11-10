@@ -1,6 +1,8 @@
 import * as objectPath from 'object-path';
 import * as R from 'ramda';
 import { SomeObj, Transform } from './utils/types';
+import { unidotify, unUnidotify } from './utils/stringUtil';
+import { unique } from './utils/objectUtil';
 
 function mapObject(originalObj: SomeObj, transformations: Transform[]) {
     return createTargetObject(transformations, originalObj);
@@ -14,26 +16,34 @@ function createTargetObject(
     const extractionTree = buildTree(transformations);
     const [treeEntries, treeLeafs] = R.partition(isTargetValue(), Object.entries(extractionTree));
 
-    // treat leaves
+    treatLeavesMutation(originalObj, treeLeafs, targetObject);
+    treatTreeMutation(originalObj, treeEntries, transformations, targetObject);
+
+    return targetObject;
+}
+
+function treatTreeMutation(originalObj: SomeObj, treeEntries: any[], transformations: Transform[], targetObject: SomeObj) {
+    treeEntries.forEach(([source, _]) => {
+
+        const arrayValuesToSet = objectPath.get(originalObj, source);
+        const nextTargets = getSubTransformations(transformations, source);
+        nextTargets.forEach(({ superTarget, transforms }) => {
+
+            arrayValuesToSet.forEach(originalSubObj => {
+
+                objectPath.push(targetObject, superTarget, createTargetObject(transforms, originalSubObj));
+            });
+        });
+    });
+}
+
+function treatLeavesMutation(originalObj: SomeObj, treeLeafs: any[], targetObject: SomeObj) {
     treeLeafs.forEach(([source, mappingsArray]) => {
         mappingsArray.forEach(target => {
             const valueToSet = objectPath.get(originalObj, unUnidotify(source));
             objectPath.set(targetObject, target, valueToSet);
         });
     });
-
-    // treat nested entries
-    treeEntries.forEach(([source, _]) => {
-        const arrayOfOriginalSubObjs = objectPath.get(originalObj, source);
-        const immediateTargets = getSubTransformations(transformations, source);
-        immediateTargets.forEach(({ superTarget, transforms }) => {
-            arrayOfOriginalSubObjs.forEach(originalSubObj => {
-                objectPath.push(targetObject, superTarget, createTargetObject(transforms, originalSubObj));
-            });
-        });
-    });
-
-    return targetObject;
 }
 
 function getSubTransformations(transformations: Transform[], immediateSource: string) {
@@ -60,10 +70,6 @@ function getSubTransformations(transformations: Transform[], immediateSource: st
             superTarget,
             transforms: value.map(el => el.innerTransformation)
         }));
-}
-
-function unique(val, idx, arr) {
-    return arr.indexOf(val) === idx;
 }
 
 function isTargetValue() {
@@ -96,20 +102,6 @@ function buildTree(transformations: Transform[]): SomeObj {
         );
 }
 
-function unidotify(str: string) {
-    const unicodeDot = '\u2024';
-    return replaceAll('.', unicodeDot)(str);
-}
-
-function unUnidotify(str: string) {
-    const unicodeDot = '\u2024';
-    return replaceAll(unicodeDot, '.')(str);
-}
-
-function replaceAll(original: string, substitute: string) {
-    return (str: string) => str.split(original).join(substitute);
-}
-
 function groupExtractionsByPath(transformations: Transform[]): { group: SomeObj, leafs: Transform[] } {
     const [furtherProcessing, noProcessing] = R.partition(transform => transform.source.includes('[]'), transformations);
     return {
@@ -121,6 +113,8 @@ function groupExtractionsByPath(transformations: Transform[]): { group: SomeObj,
 function groupBySourcePrefix() {
     return R.groupBy((transform: Transform) => transform.source.split('[]')[0]);
 }
+
+export { mapObject }
 
 
 const aa = {
@@ -149,6 +143,14 @@ const a = mapObject(aa,
         {
             source: "person.pastPositions.0",
             target: "jobs.lastPosition"
+        },
+        {
+            source: "person.addes[].street",
+            target: "addresses[].streetAddress"
+        },
+        {
+            source: "person.addes[].house",
+            target: "addresses[].houseNumber"
         },
         {
             source: "person.taho[].id",
