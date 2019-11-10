@@ -41,7 +41,11 @@ function treatLeavesMutation(originalObj: SomeObj, treeLeafs: any[], targetObjec
     treeLeafs.forEach(([source, mappingsArray]) => {
         mappingsArray.forEach(target => {
             const valueToSet = objectPath.get(originalObj, unUnidotify(source));
-            objectPath.set(targetObject, target, valueToSet);
+            if (target.includes('[]')) {
+                objectPath.push(targetObject, target.split('[]')[0], valueToSet);
+            } else {
+                objectPath.set(targetObject, target, valueToSet);
+            }
         });
     });
 }
@@ -134,11 +138,11 @@ const a = mapObject(aa,
     [
         {
             source: "person.name.fname",
-            target: "firstName"
+            target: "names[]"
         },
         {
             source: "person.name.lname",
-            target: "lastName"
+            target: "names[]"
         },
         {
             source: "person.pastPositions.0",
