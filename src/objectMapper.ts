@@ -52,7 +52,7 @@ function treatLeavesMutation(originalObj: SomeObj, treeLeafs: any[], targetObjec
 
 function getSubTransformations(transformations: Transform[], immediateSource: string) {
     const immediateTargets = transformations
-        .filter(transform => transform.source.includes(immediateSource))
+        .filter(transform => transform.source.split('[].')[0] == immediateSource)
         .map(transform => {
             const sourceSplit = transform.source.split('[].')
             const targetSplit = transform.target.split('[].');
@@ -126,6 +126,7 @@ const aa = {
         name: { fname: "FNAME", lname: "LNAME", mname: "MNAME" },
         pastPositions: ["a", "b", "c", "d"],
         addes: [{ street: "s1", house: "h1" }, { street: "s2", house: "h2" }],
+        addesB: [{ street: "s1B", house: "h1B" }, { street: "s2B", house: "h2B" }],
         taho: [
             { id: 1, test: [{ a: 1, foo: 'f1' }, { a: 2, foo: 'f2' }], nd: { test: 51 } },
             { id: 2, test: [{ a: 3, foo: 'f3' }, { a: 4, foo: 'f4' }], nd: { test: 52 } },
@@ -155,6 +156,14 @@ const a = mapObject(aa,
         {
             source: "person.addes[].house",
             target: "addresses[].houseNumber"
+        },
+        {
+            source: "person.addesB[].house",
+            target: "addresses[].houseNumber"
+        },
+        {
+            source: "person.addesB[].street",
+            target: "addresses[].streetAddress"
         },
         {
             source: "person.taho[].id",
