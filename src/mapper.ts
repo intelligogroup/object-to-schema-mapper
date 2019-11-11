@@ -1,6 +1,6 @@
 import * as objectPath from 'object-path';
 import * as R from 'ramda';
-import { SomeObj, Transform, InstructionStrategies } from './utils/types';
+import { SomeObj, Transform } from './utils/types';
 import { unidotify, unUnidotify } from './utils/stringUtil';
 import { unique } from './utils/objectUtil';
 import { postProcessCreatedObject } from './postProcessing';
