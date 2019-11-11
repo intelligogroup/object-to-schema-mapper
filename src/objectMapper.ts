@@ -1,11 +1,14 @@
 import * as objectPath from 'object-path';
 import * as R from 'ramda';
-import { SomeObj, Transform } from './utils/types';
+import { SomeObj, Transform, InstructionStrategies } from './utils/types';
 import { unidotify, unUnidotify } from './utils/stringUtil';
 import { unique } from './utils/objectUtil';
+import { postProcessCreatedObject } from './postProcessing';
 
 function mapObject(originalObj: SomeObj, transformations: Transform[]) {
-    return createTargetObject(transformations, originalObj);
+    const initialObject = createTargetObject(transformations, originalObj);
+    const postProcessedObject = postProcessCreatedObject(initialObject, transformations);
+    return postProcessedObject;
 }
 
 function createTargetObject(
@@ -40,11 +43,11 @@ function treatTreeMutation(originalObj: SomeObj, treeEntries: any[], transformat
 function treatLeavesMutation(originalObj: SomeObj, treeLeafs: any[], targetObject: SomeObj) {
     treeLeafs.forEach(([source, mappingsArray]) => {
         mappingsArray.forEach(target => {
-            const valueToSet = objectPath.get(originalObj, unUnidotify(source));
-            if (target.includes('[]')) {
-                objectPath.push(targetObject, target.split('[]')[0], valueToSet);
+            let valueToSet = objectPath.get(originalObj, unUnidotify(source)) || target.defaultValue || null;
+            if (target.path.includes('[]')) {
+                objectPath.push(targetObject, target.path.split('[]')[0], valueToSet);
             } else {
-                objectPath.set(targetObject, target, valueToSet);
+                objectPath.set(targetObject, target.path, valueToSet);
             }
         });
     });
@@ -55,13 +58,16 @@ function getSubTransformations(transformations: Transform[], immediateSource: st
         .filter(transform => transform.source.split('[].')[0] == immediateSource)
         .map(transform => {
             const sourceSplit = transform.source.split('[].')
-            const targetSplit = transform.target.split('[].');
+            const targetSplit = transform.target.path.split('[].');
             const idxOfNesting = sourceSplit.indexOf(immediateSource);
             return {
                 superTarget: targetSplit[idxOfNesting],
                 innerTransformation: {
                     source: sourceSplit.slice(idxOfNesting + 1).join('[].'),
-                    target: targetSplit.slice(idxOfNesting + 1).join('[].')
+                    target: {
+                        ...transform.target,
+                        path: targetSplit.slice(idxOfNesting + 1).join('[].'),
+                    }
                 }
             };
         })
@@ -123,7 +129,7 @@ export { mapObject }
 
 const aa = {
     person: {
-        name: { fname: "FNAME", lname: "LNAME", mname: "MNAME" },
+        name: { mname: "MNAME" },
         pastPositions: ["a", "b", "c", "d"],
         addes: [{ street: "s1", house: "h1" }, { street: "s2", house: "h2" }],
         addesB: [{ street: "s1B", house: "h1B" }, { street: "s2B", house: "h2B" }],
@@ -139,43 +145,68 @@ const a = mapObject(aa,
     [
         {
             source: "person.name.fname",
-            target: "names[]"
+            target: {
+                path: "names.first",
+                defaultValue: "john",
+            }
         },
         {
             source: "person.name.lname",
-            target: "names[]"
+            target: {
+                path: "names.last",
+                conditionalValue: {
+                    targetPathCondition: "names.first",
+                    value: "doe"
+                }
+            }
         },
         {
             source: "person.pastPositions.0",
-            target: "jobs.lastPosition"
+            target: {
+                path: "jobs.lastPosition"
+            }
         },
         {
             source: "person.addes[].street",
-            target: "addresses[].streetAddress"
+            target: {
+                path: "addresses[].streetAddress"
+            }
         },
         {
             source: "person.addes[].house",
-            target: "addresses[].houseNumber"
+            target: {
+                path: "addresses[].houseNumber"
+            }
         },
         {
             source: "person.addesB[].house",
-            target: "addresses[].houseNumber"
+            target: {
+                path: "addresses[].houseNumber"
+            }
         },
         {
             source: "person.addesB[].street",
-            target: "addresses[].streetAddress"
+            target: {
+                path: "addresses[].streetAddress"
+            }
         },
         {
             source: "person.taho[].id",
-            target: "other[].transformedId"
+            target: {
+                path: "other[].transformedId"
+            }
         },
         {
             source: "person.taho[].test[].a",
-            target: "some.time[].test[].p"
+            target: {
+                path: "some.time[].test[].p"
+            }
         },
         {
             source: "person.taho[].test[].foo",
-            target: "some.time[].test[].no"
+            target: {
+                path: "some.time[].test[].no"
+            }
         }
     ]
 )

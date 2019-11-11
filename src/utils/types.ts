@@ -1,6 +1,20 @@
 type SomeObj = { [key: string]: any }
 
-type Transform = { source: string, target: string }
+type InstructionStrategies = {
+    [key: string]: (object: SomeObj, instruction) => SomeObj;
+}
+
+type Transform = {
+    source: string,
+    target: {
+        path: string,
+        defaultValue?: any,
+        conditionalValue?: {
+            targetPathCondition: string,
+            value: any
+        }
+    }
+}
 
 type ValType = 'ARRAY'
     | 'STRING'
@@ -18,6 +32,7 @@ type ValArchtype = 'SIMPLE'
 export {
     SomeObj,
     Transform,
+    InstructionStrategies,
     ValType,
     ValArchtype
 };
