@@ -1,15 +1,16 @@
 import objectPath from 'object-path';
 import { SomeObj, Transform, InstructionStrategies } from "./utils/types";
 
-const postProcessingCommands: string[] = [
-    "conditionalValue"
-];
+const strategies: InstructionStrategies = {
+    conditionalValue: isConditionalValueExist
+}
 
 function postProcessCreatedObject(createdObject: SomeObj, transformations: Transform[]) {
     const executeInstruction = processInstruction(createdObject);
     return transformations
         .filter(
-            transform => postProcessingCommands
+            transform => Object
+                .keys(strategies)
                 .find(postProcessKey => Object.keys(transform.target).join(',').includes(postProcessKey))
         )
         .map(transform => transform.target)
@@ -17,9 +18,6 @@ function postProcessCreatedObject(createdObject: SomeObj, transformations: Trans
 }
 
 function followInstruction(object: SomeObj, instruction) {
-    const strategies: InstructionStrategies = {
-        conditionalValue: isConditionalValueExist
-    }
     return Object
         .keys(instruction)
         .reduce(

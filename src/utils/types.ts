@@ -4,6 +4,11 @@ type InstructionStrategies = {
     [key: string]: (object: SomeObj, instruction) => SomeObj;
 }
 
+type PredefinedTransformation = 'toUpperCase'
+    | 'toLowerCase'
+    | 'titleCase'
+    | 'toDate'
+
 type Transform = {
     source: string,
     target: {
@@ -13,6 +18,7 @@ type Transform = {
             targetPathCondition: string,
             value: any
         }
+        predefinedTransformations?: PredefinedTransformation[]
     }
 }
 

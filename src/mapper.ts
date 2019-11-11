@@ -19,7 +19,7 @@ function createTargetObject(
     const extractionTree = buildTree(transformations);
     const [treeEntries, treeLeafs] = R.partition(isTargetValue(), Object.entries(extractionTree));
 
-    treatLeavesMutation(originalObj, treeLeafs, targetObject);
+    treatLeafsMutation(originalObj, treeLeafs, targetObject);
     treatTreeMutation(originalObj, treeEntries, transformations, targetObject);
 
     return targetObject;
@@ -40,10 +40,30 @@ function treatTreeMutation(originalObj: SomeObj, treeEntries: any[], transformat
     });
 }
 
-function treatLeavesMutation(originalObj: SomeObj, treeLeafs: any[], targetObject: SomeObj) {
+const strategies = {
+    predefinedTransformations: {
+        toUpperCase: (str: string) => str.toUpperCase(),
+        toLowerCase: (str: string) => str.toLowerCase(),
+        titleCase: (str: string) => str
+            .split(/\s/)
+            .map(word => `${word[0].toUpperCase()}${word.slice(1)}`)
+            .join(' '),
+        toDate: (string: string) => new Date(string),
+    }
+}
+
+function treatLeafsMutation(originalObj: SomeObj, treeLeafs: any[], targetObject: SomeObj) {
     treeLeafs.forEach(([source, mappingsArray]) => {
         mappingsArray.forEach(target => {
             let valueToSet = objectPath.get(originalObj, unUnidotify(source)) || target.defaultValue || null;
+            if (target.predefinedTransformations) {
+                valueToSet = target
+                    .predefinedTransformations
+                    .reduce(
+                        (finalValue, transformationName) => strategies.predefinedTransformations[transformationName](finalValue),
+                        valueToSet
+                    );
+            }
             if (target.path.includes('[]')) {
                 objectPath.push(targetObject, target.path.split('[]')[0], valueToSet);
             } else {
@@ -130,9 +150,10 @@ export { mapObject }
 const aa = {
     person: {
         name: { mname: "MNAME" },
+        dateOfBirth: "10/14/88",
         pastPositions: ["a", "b", "c", "d"],
         addes: [{ street: "s1", house: "h1" }, { street: "s2", house: "h2" }],
-        addesB: [{ street: "s1B", house: "h1B" }, { street: "s2B", house: "h2B" }],
+        addesB: [{ street: "wall street", house: "h1B" }, { street: "s2B", house: "h2B" }],
         taho: [
             { id: 1, test: [{ a: 1, foo: 'f1' }, { a: 2, foo: 'f2' }], nd: { test: 51 } },
             { id: 2, test: [{ a: 3, foo: 'f3' }, { a: 4, foo: 'f4' }], nd: { test: 52 } },
@@ -151,6 +172,13 @@ const a = mapObject(aa,
             }
         },
         {
+            source: "person.dateOfBirth",
+            target: {
+                path: "dob",
+                predefinedTransformations: ['toDate']
+            }
+        },
+        {
             source: "person.name.lname",
             target: {
                 path: "names.last",
@@ -163,7 +191,8 @@ const a = mapObject(aa,
         {
             source: "person.pastPositions.0",
             target: {
-                path: "jobs.lastPosition"
+                path: "jobs.lastPosition",
+                predefinedTransformations: ["toUpperCase"]
             }
         },
         {
@@ -187,7 +216,8 @@ const a = mapObject(aa,
         {
             source: "person.addesB[].street",
             target: {
-                path: "addresses[].streetAddress"
+                path: "addresses[].streetAddress",
+                predefinedTransformations: ["titleCase"]
             }
         },
         {
