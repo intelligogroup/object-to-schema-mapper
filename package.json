@@ -2,8 +2,8 @@
   "name": "object-and-schema-mapper",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/mapper",
-  "types": "dist/mapper.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest"
   },
