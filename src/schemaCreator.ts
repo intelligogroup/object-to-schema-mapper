@@ -1,5 +1,5 @@
 import { SomeObj } from './utils/types';
-import { resolveValueArchtype, resolveType } from './utils/objectUtil';
+import { resolveValueArchtype, resolveType } from './utils/generalUtil';
 
 function mapObjectToSchema(obj: SomeObj, schema: SomeObj = {}): SomeObj {
     return Object

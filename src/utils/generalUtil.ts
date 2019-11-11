@@ -4,6 +4,10 @@ function unique(val, idx, arr) {
     return arr.indexOf(val) === idx;
 }
 
+function identity(value) {
+    return value;
+}
+
 function resolveValueArchtype(value: any): ValArchtype {
     const type = resolveType(value);
     switch (type) {
@@ -45,6 +49,7 @@ function resolveType(value: any): ValType {
 }
 
 export {
+    identity,
     unique,
     resolveType,
     resolveValueArchtype,

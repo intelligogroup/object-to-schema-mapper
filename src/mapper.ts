@@ -2,7 +2,7 @@ import * as objectPath from 'object-path';
 import * as R from 'ramda';
 import { SomeObj, Transform } from './utils/types';
 import { unidotify, unUnidotify } from './utils/stringUtil';
-import { unique } from './utils/objectUtil';
+import { unique, identity } from './utils/generalUtil';
 import { postProcessCreatedObject } from './postProcessing';
 
 function mapObject(originalObj: SomeObj, transformations: Transform[]) {
@@ -60,7 +60,8 @@ function treatLeafsMutation(originalObj: SomeObj, treeLeafs: any[], targetObject
                 valueToSet = target
                     .predefinedTransformations
                     .reduce(
-                        (finalValue, transformationName) => strategies.predefinedTransformations[transformationName](finalValue),
+                        (finalValue, transformationName) =>
+                            (strategies.predefinedTransformations[transformationName] || identity)(finalValue),
                         valueToSet
                     );
             }
