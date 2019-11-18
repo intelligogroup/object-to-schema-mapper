@@ -6,6 +6,9 @@ import { unique, identity } from './utils/generalUtil';
 import { postProcessCreatedObject } from './postProcessing';
 
 function mapObject(originalObj: SomeObj, transformations: Transform[]) {
+    if (!transformations || transformations.length == 0) {
+        return {};
+    }
     const initialObject = createTargetObject(transformations, originalObj);
     const postProcessedObject = postProcessCreatedObject(initialObject, transformations);
     return postProcessedObject;
