@@ -1,5 +1,5 @@
 {
-  "name": "object-and-schema-mapper",
+  "name": "@intelligo.ai/object-to-schema",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
