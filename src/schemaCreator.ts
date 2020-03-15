@@ -26,7 +26,7 @@ function resolveOperation(schema: SomeObj, obj: any, key: string): SomeObj {
             return handleEmptyValue(schema, key);
         case 'SIMPLE':
             const type = resolveType(nestedValue);
-            return simpleType(type, key, schema);
+            return simpleType(type, key, schema, nestedValue);
         case 'ARRAY':
             return Object.assign(schema, { [key]: [arrayOfObjectsToSchema(nestedValue, {})] });
         case 'OBJECT':
@@ -43,8 +43,8 @@ function arrayOfObjectsToSchema(array: [any], schema: SomeObj = {}): SomeObj {
     );
 }
 
-function simpleType(type: string, key: string, schema: SomeObj) {
-    return Object.assign(schema, { [key]: JSON.stringify({ type: type.toLowerCase() }) });
+function simpleType(type: string, key: string, schema: SomeObj, value: any) {
+    return Object.assign(schema, { [key]: JSON.stringify({ type: type.toLowerCase(), example: value }) });
 }
 
 function unknownType(schema: SomeObj, key: string) {
