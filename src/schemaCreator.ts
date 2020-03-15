@@ -38,7 +38,7 @@ function arrayOfObjectsToSchema(array: [any], schema: SomeObj = {}): SomeObj {
     return array.reduce(
         (acc, obj) => resolveValueArchtype(obj) == 'OBJECT'
             ? mapObjectToSchema(obj, acc)
-            : JSON.stringify({ type: resolveType(obj).toLowerCase() }),
+            : JSON.stringify({ type: resolveType(obj).toLowerCase(), example: obj }),
         schema
     );
 }
