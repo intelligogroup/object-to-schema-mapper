@@ -6,7 +6,7 @@ export {
     mapObject,
     mapObjectToSchema,
     extractExampleFromSchema,
-};
+}
 
 // const aa = {
 //     person: {
