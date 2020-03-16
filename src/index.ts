@@ -1,9 +1,11 @@
 import { mapObject } from './mapper';
 import { mapObjectToSchema } from './schemaCreator';
+import { extractExampleFromSchema } from './exampleRecordExtractor';
 
 export {
     mapObject,
-    mapObjectToSchema
+    mapObjectToSchema,
+    extractExampleFromSchema,
 };
 
 // const aa = {
