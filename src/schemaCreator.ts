@@ -2,12 +2,14 @@ import { SomeObj } from './utils/types';
 import { resolveValueArchtype, resolveType } from './utils/generalUtil';
 
 function mapObjectToSchema(obj: SomeObj, schema: SomeObj = {}): SomeObj {
-    return Object
-        .keys(obj)
-        .reduce(
-            (schema, key) => resolveOperation(schema, obj, key),
-            schema
-        );
+    return obj
+        ? Object
+            .keys(obj)
+            .reduce(
+                (schema, key) => resolveOperation(schema, obj, key),
+                schema
+            )
+        : {};
 }
 
 function handleEmptyValue(schema: SomeObj, key: string) {
