@@ -1,9 +1,16 @@
-import * as objectPath from 'object-path';
-import * as R from 'ramda';
-import { SomeObj, Transform } from './utils/types';
+import objectPath from 'object-path';
+import R from 'ramda';
+
+import { SomeObj, Transform, TreeLeaf, } from './utils/types';
 import { unidotify, unUnidotify } from './utils/stringUtil';
 import { unique, identity } from './utils/generalUtil';
 import { postProcessCreatedObject } from './postProcessing';
+import {
+    generateTransform,
+    treeLeafsToTransforms,
+    groupTransformsByTarget,
+    sortTransformsByPriority
+} from './utils/transform';
 
 function mapObject(originalObj: SomeObj, transformations: Transform[]) {
     if (!transformations || transformations.length == 0) {
@@ -55,8 +62,42 @@ const strategies = {
     }
 }
 
-function treatLeafsMutation(originalObj: SomeObj, treeLeafs: any[], targetObject: SomeObj) {
-    treeLeafs.forEach(([source, mappingsArray]) => {
+function chooseHighestPriorityTransform(originalObj: SomeObj) {
+    return function withObject(transforms: Transform[]): Transform | null {
+        const transformGenerator = generateTransform(transforms);
+        let transform = transformGenerator.next()
+        while (!transform.done && !objectPath.has(originalObj, unUnidotify(transform.value.source))) {
+            transform = transformGenerator.next();
+        }
+        return transform.done ? null : transform.value;
+    }
+}
+
+function transformsToTreeLeafs(transforms: Transform[]): TreeLeaf[] {
+    const grouped: { [path: string]: Transform[] } = R.groupBy((transform: Transform) => transform.source, transforms);
+    return Object
+        .entries(grouped)
+        .map(([path, transforms]) => [path, transforms.map(transform => transform.target)])
+}
+
+function eliminateLowPriority(originalObj: SomeObj, treeLeafs: TreeLeaf[]): TreeLeaf[] {
+    const transforms = treeLeafsToTransforms(treeLeafs);
+    const tranformsByTarget = groupTransformsByTarget(transforms);
+    const highestPriorityTransforms = Object
+        .entries(tranformsByTarget)
+        .map(([path, transforms]) => [
+            path,
+            chooseHighestPriorityTransform(originalObj)(sortTransformsByPriority(transforms))
+        ])
+        .filter(([_, transforms]) => transforms != null)
+        .map(([_, transform]) => transform)
+    const priorityTreeLeafs = transformsToTreeLeafs(highestPriorityTransforms as Transform[]);
+    return priorityTreeLeafs;
+}
+
+function treatLeafsMutation(originalObj: SomeObj, treeLeafs: TreeLeaf[], targetObject: SomeObj) {
+    const priorityTreeLeafs = eliminateLowPriority(originalObj, treeLeafs);
+    priorityTreeLeafs.forEach(([source, mappingsArray]) => {
         mappingsArray.forEach(target => {
             let valueToSet = objectPath.get(originalObj, unUnidotify(source)) || target.defaultValue || null;
             if (target.predefinedTransformations) {
