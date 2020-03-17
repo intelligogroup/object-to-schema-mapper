@@ -9,10 +9,13 @@ type PredefinedTransformation = 'toUpperCase'
     | 'titleCase'
     | 'toDate'
 
+type TreeLeaf = [string, Transform['target'][]]
+
 type Transform = {
     source: string,
     target: {
         path: string,
+        priority?: number,
         defaultValue?: any,
         conditionalValue?: {
             targetPathCondition: string,
@@ -40,5 +43,6 @@ export {
     Transform,
     InstructionStrategies,
     ValType,
-    ValArchtype
+    ValArchtype,
+    TreeLeaf,
 };
