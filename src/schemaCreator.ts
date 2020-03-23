@@ -25,7 +25,7 @@ function handleEmptyValue(schema: SomeObj, key: string) {
 function resolveOperation(schema: SomeObj, obj: any, key: string): SomeObj {
     const nestedValue = obj[key];
     const archType = resolveValueArchtype(nestedValue);
-     switch (archType) {
+    switch (archType) {
         case 'EMPTY':
             return handleEmptyValue(schema, key);
         case 'SIMPLE':
@@ -38,21 +38,35 @@ function resolveOperation(schema: SomeObj, obj: any, key: string): SomeObj {
     }
 }
 
-function arrayOfObjectsToSchema(array: [any], schema: SomeObj = {}): SomeObj {
+function arrayOfObjectsToSchema(array: any[], schema: SomeObj = {}): SomeObj {
     return array.reduce(
-        (acc, obj) => resolveValueArchtype(obj) == 'OBJECT'
-            ? mapObjectToSchema(obj, acc)
-            : JSON.stringify({ type: resolveType(obj).toLowerCase(), example: obj }),
+        (accSchema, obj) => resolveValueArchtype(obj) == 'OBJECT'
+            ? mapObjectToSchema(obj, accSchema)
+            : JSON.stringify({ type: resolveType(obj).toLowerCase(), example: generateExample(obj) }),
         schema
     );
 }
 
 function simpleType(type: string, key: string, schema: SomeObj, value: any) {
-    return R.mergeDeepLeft(schema, { [key]: JSON.stringify({ type: type.toLowerCase(), example: value }) });
+    return R.mergeDeepLeft(schema, { [key]: JSON.stringify({ type: type.toLowerCase(), example: generateExample(value) }) });
 }
 
 function unknownType(schema: SomeObj, key: string) {
     return R.mergeDeepLeft(schema, { [key]: JSON.stringify({ type: 'unknown' }) });
+}
+
+function generateExample(value: string | number | boolean) {
+    if (typeof value == 'string') {
+        return R.tryCatch(
+            () => {
+                const json = JSON.parse(value);
+                return json.example && json.type ? json.example : value;
+            },
+            () => value
+        )()
+    } else {
+        return value;
+    }
 }
 
 export { mapObjectToSchema };
