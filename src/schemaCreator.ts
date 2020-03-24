@@ -2,24 +2,19 @@ import R from 'ramda';
 
 import { SomeObj } from './utils/types';
 import { resolveValueArchtype, resolveType } from './utils/generalUtil';
+import { assignSchema } from './utils/transform';
 
 function mapObjectToSchema(obj: SomeObj, schema: SomeObj = {}): SomeObj {
-    return obj
-        ? Object
-            .keys(obj)
-            .reduce(
-                (schema, key) => resolveOperation(schema, obj, key),
-                schema
-            )
-        : {};
-}
-
-function handleEmptyValue(schema: SomeObj, key: string) {
-    const value = schema[key];
-    if (value == null || value == 'unknown') {
-        return unknownType(schema, key);
+    if (!obj) {
+        return {};
     }
-    return schema;
+
+    return Object
+        .keys(obj)
+        .reduce(
+            (schema, key) => resolveOperation(schema, obj, key),
+            schema
+        );
 }
 
 function resolveOperation(schema: SomeObj, obj: any, key: string): SomeObj {
@@ -27,34 +22,58 @@ function resolveOperation(schema: SomeObj, obj: any, key: string): SomeObj {
     const archType = resolveValueArchtype(nestedValue);
     switch (archType) {
         case 'EMPTY':
-            return handleEmptyValue(schema, key);
+            return assignSchema(schema, key, handleEmptyValue(schema, key));
         case 'SIMPLE':
             const type = resolveType(nestedValue);
-            return simpleType(type, key, schema, nestedValue);
+            return assignSchema(schema, key, simpleType(type, nestedValue));
         case 'ARRAY':
             const schemaValue = schema[key];
-            if (resolveValueArchtype(nestedValue[0]) == 'OBJECT') {
-                const arraySchema = nestedValue.reduce(
-                    (accSchema, obj) => mapObjectToSchema(obj, accSchema),
-                    schemaValue ? schemaValue[0] : {}
-                );
-                return Object.assign(schema, { [key]: [arraySchema] })
-            } else {
-                const type = resolveType(nestedValue);
-                return Object.assign(schema, { [key]: [JSON.stringify({ type: type.toLowerCase(), example: generateExample(nestedValue[0]) })] });
-            }
+            return assignSchema(schema, key, handleArrayValues(nestedValue, schemaValue));
         case 'OBJECT':
-            return R.mergeDeepLeft(schema, { [key]: mapObjectToSchema(nestedValue) });
+            return assignSchema(schema, key, handleObjectValues(nestedValue, schema, key));
     }
 }
 
-function simpleType(type: string, key: string, schema: SomeObj, value: any) {
-    return Object.assign(schema, { [key]: JSON.stringify({ type: type.toLowerCase(), example: generateExample(value) }) });
+function handleEmptyValue(schema: SomeObj, key: string) {
+    const value = schema[key];
+    return value == null || value.includes('unknown')
+        ? unknownType()
+        : schema;
 }
 
-function unknownType(schema: SomeObj, key: string) {
-    // if (schema[key] == null || (typeof schema[key] == 'string' &&)
-    return Object.assign(schema, { [key]: JSON.stringify({ type: 'unknown' }) });
+function handleObjectValues(nestedValue: SomeObj, schema: SomeObj, key: string) {
+    if (schema[key]) {
+        const mergedSchema = mapObjectToSchema(nestedValue, schema[key]);
+        return mergedSchema;
+    } else {
+        return mapObjectToSchema(nestedValue);
+    }
+}
+
+function handleArrayValues(nestedValue: any[], schemaValue: any[]) {
+    if (resolveValueArchtype(nestedValue[0]) == 'OBJECT') {
+        const arraySchema = nestedValue.reduce(
+            (accSchema, obj) => mapObjectToSchema(obj, accSchema),
+            schemaValue ? schemaValue[0] : {}
+        );
+        return [arraySchema];
+    } else {
+        const type = resolveType(nestedValue);
+        return [
+            JSON.stringify({
+                type: type.toLowerCase(),
+                example: generateExample(nestedValue[0])
+            })
+        ];
+    }
+}
+
+function simpleType(type: string, value: any) {
+    return JSON.stringify({ type: type.toLowerCase(), example: generateExample(value) });
+}
+
+function unknownType() {
+    return JSON.stringify({ type: 'unknown' });
 }
 
 function generateExample(value: string | number | boolean) {
