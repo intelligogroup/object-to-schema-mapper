@@ -32,27 +32,29 @@ function resolveOperation(schema: SomeObj, obj: any, key: string): SomeObj {
             const type = resolveType(nestedValue);
             return simpleType(type, key, schema, nestedValue);
         case 'ARRAY':
-            return R.mergeDeepLeft(schema, { [key]: [arrayOfObjectsToSchema(nestedValue)] });
+            const schemaValue = schema[key];
+            if (resolveValueArchtype(nestedValue[0]) == 'OBJECT') {
+                const arraySchema = nestedValue.reduce(
+                    (accSchema, obj) => mapObjectToSchema(obj, accSchema),
+                    schemaValue ? schemaValue[0] : {}
+                );
+                return Object.assign(schema, { [key]: [arraySchema] })
+            } else {
+                const type = resolveType(nestedValue);
+                return Object.assign(schema, { [key]: [JSON.stringify({ type: type.toLowerCase(), example: generateExample(nestedValue[0]) })] });
+            }
         case 'OBJECT':
             return R.mergeDeepLeft(schema, { [key]: mapObjectToSchema(nestedValue) });
     }
 }
 
-function arrayOfObjectsToSchema(array: any[], schema: SomeObj = {}): SomeObj {
-    return array.reduce(
-        (accSchema, obj) => resolveValueArchtype(obj) == 'OBJECT'
-            ? mapObjectToSchema(obj, accSchema)
-            : JSON.stringify({ type: resolveType(obj).toLowerCase(), example: generateExample(obj) }),
-        schema
-    );
-}
-
 function simpleType(type: string, key: string, schema: SomeObj, value: any) {
-    return R.mergeDeepLeft(schema, { [key]: JSON.stringify({ type: type.toLowerCase(), example: generateExample(value) }) });
+    return Object.assign(schema, { [key]: JSON.stringify({ type: type.toLowerCase(), example: generateExample(value) }) });
 }
 
 function unknownType(schema: SomeObj, key: string) {
-    return R.mergeDeepLeft(schema, { [key]: JSON.stringify({ type: 'unknown' }) });
+    // if (schema[key] == null || (typeof schema[key] == 'string' &&)
+    return Object.assign(schema, { [key]: JSON.stringify({ type: 'unknown' }) });
 }
 
 function generateExample(value: string | number | boolean) {
