@@ -8,6 +8,10 @@ export function* generateTransform(transforms: Transform[]): Iterator<Transform>
     }
 }
 
+export function assignSchema(schema: SomeObj, key: string, value: any) {
+    return Object.assign(schema, { [key]: value });
+}
+
 export function treeLeafsToTransforms(treeLeafs: TreeLeaf[]) {
     const transforms: Transform[] = treeLeafs.flatMap(
         ([path, targets]) => targets.map(target => ({ source: path, target }))
