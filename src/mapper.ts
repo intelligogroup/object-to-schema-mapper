@@ -9,7 +9,8 @@ import {
     generateTransform,
     treeLeafsToTransforms,
     groupTransformsByTarget,
-    sortTransformsByPriority
+    sortTransformsByPriority,
+    pruneEmpty,
 } from './utils/transform';
 
 function mapObject(originalObj: SomeObj, transformations: Transform[]) {
@@ -18,7 +19,7 @@ function mapObject(originalObj: SomeObj, transformations: Transform[]) {
     }
     const initialObject = createTargetObject(transformations, originalObj);
     const postProcessedObject = postProcessCreatedObject(initialObject, transformations);
-    return postProcessedObject;
+    return pruneEmpty(postProcessedObject);
 }
 
 function createTargetObject(
