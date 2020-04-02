@@ -1,4 +1,5 @@
 import R from 'ramda';
+const _ = require('lodash');
 
 import { Transform, SomeObj, TreeLeaf } from './types';
 
@@ -25,4 +26,32 @@ export function groupTransformsByTarget(transforms: Transform[]): SomeObj {
 
 export function sortTransformsByPriority(transforms: Transform[]): Transform[] {
     return R.sort((ta: Transform, tb: Transform) => (ta.target?.priority ?? 1000) - (tb.target?.priority ?? 1000), transforms);
+}
+
+export function pruneObject(obj: SomeObj): SomeObj {
+    const entries = Object
+        .entries(obj)
+        .map(([key, value]) => R.isEmpty(value)
+            ? [key, undefined]
+            : [key, pruneObject(value)]
+        )
+        .filter(([_, value]) => !value);
+
+    return Object.entries(entries);
+}
+
+export function pruneEmpty<T extends SomeObj>(obj: T) {
+    return function prune(current) {
+        _.forOwn(current, function (value: any, key: string | number) {
+            if (_.isUndefined(value) || _.isNull(value) || _.isNaN(value) ||
+                (_.isString(value) && _.isEmpty(value)) ||
+                (_.isObject(value) && _.isEmpty(prune(value)))) {
+                delete current[key];
+            }
+        });
+        // remove any leftover undefined values from the delete 
+        // operation on an array
+        if (_.isArray(current)) _.pull(current, undefined);
+        return current;
+    }(_.cloneDeep(obj));  // Do not modify the original object, create a clone instead
 }
