@@ -1,9 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`mapper tests mapper maps object to schema correctly: inputDataMapper 1 1`] = `
-Object {
-  "info": Array [
-    undefined,
-  ],
-}
-`;
