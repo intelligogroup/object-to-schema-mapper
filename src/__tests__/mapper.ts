@@ -6,7 +6,7 @@ describe('mapper tests', () => {
 
     test('mapper maps object to schema correctly', () => {
 
-        expect(mapObjectToSchema(data)).toMatchSnapshot('inputDataMapper 1');
+        expect(mapObjectToSchema(data)).toMatchSnapshot('inputDataMapper 1')
     });
 
 })
