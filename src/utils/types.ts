@@ -4,10 +4,7 @@ type InstructionStrategies = {
     [key: string]: (object: SomeObj, instruction) => SomeObj;
 }
 
-type PredefinedTransformation = 'toUpperCase'
-    | 'toLowerCase'
-    | 'titleCase'
-    | 'toDate'
+type PredefinedTransformation = 'toUpperCase' | 'toLowerCase' | 'titleCase' | 'toDate'
 
 type TreeLeaf = [string, Transform['target'][]]
 

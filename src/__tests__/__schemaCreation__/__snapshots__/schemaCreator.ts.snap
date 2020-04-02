@@ -1,0 +1,48 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`map object to schema tests mapper creates a schema that encompases all data from multiple results 1`] = `
+Object {
+  "person": Object {
+    "addes": Array [
+      Object {
+        "house": "{\\"type\\":\\"string\\",\\"example\\":\\"h2\\"}",
+        "street": "{\\"type\\":\\"string\\",\\"example\\":\\"s2\\"}",
+      },
+    ],
+    "addesB": Array [
+      Object {
+        "house": "{\\"type\\":\\"string\\",\\"example\\":\\"h2B\\"}",
+        "street": "{\\"type\\":\\"string\\",\\"example\\":\\"s2B\\"}",
+      },
+    ],
+    "currentPosition": "{\\"type\\":\\"string\\",\\"example\\":\\"e\\"}",
+    "dateOfBirth": "{\\"type\\":\\"string\\",\\"example\\":\\"10/14/88\\"}",
+    "interests": Array [
+      "{\\"type\\":\\"array\\",\\"example\\":\\"alcoholism\\"}",
+    ],
+    "name": Object {
+      "mname": "{\\"type\\":\\"string\\",\\"example\\":\\"MNAME\\"}",
+    },
+    "pastPositions": Array [
+      "{\\"type\\":\\"array\\",\\"example\\":\\"a\\"}",
+    ],
+    "taho": Array [
+      Object {
+        "id": "{\\"type\\":\\"number\\",\\"example\\":3}",
+        "nd": Object {
+          "test": "{\\"type\\":\\"number\\",\\"example\\":53}",
+        },
+        "test": Array [
+          Object {
+            "a": "{\\"type\\":\\"number\\",\\"example\\":6}",
+            "foo": "{\\"type\\":\\"string\\",\\"example\\":\\"f6\\"}",
+          },
+        ],
+        "test0": "{\\"type\\":\\"number\\",\\"example\\":11}",
+        "test1": "{\\"type\\":\\"number\\",\\"example\\":22}",
+        "test2": "{\\"type\\":\\"number\\",\\"example\\":33}",
+      },
+    ],
+  },
+}
+`;
