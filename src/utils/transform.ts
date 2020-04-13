@@ -36,18 +36,6 @@ export function sortTransformsByPriority(transforms: Transform[]): Transform[] {
     return R.sort((ta: Transform, tb: Transform) => (ta.target?.priority ?? 1000) - (tb.target?.priority ?? 1000), transforms);
 }
 
-export function pruneObject(obj: SomeObj): SomeObj {
-    const entries = Object
-        .entries(obj)
-        .map(([key, value]) => R.isEmpty(value)
-            ? [key, undefined]
-            : [key, pruneObject(value)]
-        )
-        .filter(([_, value]) => !value);
-
-    return Object.entries(entries);
-}
-
 export function pruneEmpty<T extends SomeObj>(obj: T) {
     return function prune(current) {
         _.forOwn(current, function (value: any, key: string | number) {
