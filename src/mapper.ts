@@ -11,6 +11,7 @@ import {
     groupTransformsByTarget,
     sortTransformsByPriority,
     pruneEmpty,
+    applyToOneOrMany,
 } from './utils/transform';
 
 function mapObject(originalObj: SomeObj, transformations: Transform[]) {
@@ -51,15 +52,21 @@ function treatTreeMutation(originalObj: SomeObj, treeEntries: any[], transformat
     });
 }
 
+const toLowerCase = applyToOneOrMany<string, string>(str => str.toLowerCase());
+const toUpperCase = applyToOneOrMany<string, string>(str => str.toUpperCase());
+const titleCase = applyToOneOrMany<string, string>(str => str
+    .split(/\s/)
+    .map(word => `${word[0].toUpperCase()}${word.slice(1)}`)
+    .join(' ')
+)
+const toDate = applyToOneOrMany<string, Date>(str => new Date(str));
+
 const strategies = {
     predefinedTransformations: {
-        toUpperCase: (str: string) => str.toUpperCase(),
-        toLowerCase: (str: string) => str.toLowerCase(),
-        titleCase: (str: string) => str
-            .split(/\s/)
-            .map(word => `${word[0].toUpperCase()}${word.slice(1)}`)
-            .join(' '),
-        toDate: (string: string) => new Date(string),
+        toUpperCase: (str: string | string[]) => toUpperCase(str),
+        toLowerCase: (str: string | string[]) => toLowerCase(str),
+        titleCase: (str: string | string[]) => titleCase(str),
+        toDate: (str: string | string[]) => toDate(str),
     }
 }
 

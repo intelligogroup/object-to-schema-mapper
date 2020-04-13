@@ -9,6 +9,14 @@ export function* generateTransform(transforms: Transform[]): Iterator<Transform>
     }
 }
 
+export function applyToOneOrMany<P, A>(fn: (oneOrMany: P) => A) {
+    return function withFunction(oneOrMany: P | P[]): A | A[] {
+        return Array.isArray(oneOrMany)
+            ? (oneOrMany as P[]).map(fn)
+            : fn(oneOrMany as P)
+    }
+}
+
 export function assignSchema(schema: SomeObj, key: string, value: any) {
     return Object.assign(schema, { [key]: value });
 }

@@ -1,0 +1,84 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`transform data object into target object according rules in transformations creates an object that is the result of applying all transformations on the data object 1`] = `
+Object {
+  "addresses": Array [
+    Object {
+      "houseNumber": "h1",
+      "streetAddress": "s1",
+    },
+    Object {
+      "houseNumber": "h2",
+      "streetAddress": "s2",
+    },
+    Object {
+      "houseNumber": "h1B",
+      "streetAddress": "Wall Street",
+    },
+    Object {
+      "houseNumber": "h2B",
+      "streetAddress": "S2B",
+    },
+  ],
+  "jobs": Object {
+    "currentPosition": "E",
+    "lastPositions": Array [
+      "A",
+      "B",
+      "C",
+      "D",
+    ],
+  },
+  "other": Array [
+    Object {
+      "transformedId": 1,
+    },
+    Object {
+      "transformedId": 2,
+    },
+    Object {
+      "transformedId": 3,
+    },
+  ],
+  "some": Object {
+    "time": Array [
+      Object {
+        "test": Array [
+          Object {
+            "no": "f1",
+            "p": 1,
+          },
+          Object {
+            "no": "f2",
+            "p": 2,
+          },
+        ],
+      },
+      Object {
+        "test": Array [
+          Object {
+            "no": "f3",
+            "p": 3,
+          },
+          Object {
+            "no": "f4",
+            "p": 4,
+          },
+        ],
+      },
+      Object {
+        "test": Array [
+          Object {
+            "no": "f5",
+            "p": 5,
+          },
+          Object {
+            "no": "f6",
+            "p": 6,
+          },
+        ],
+      },
+    ],
+  },
+}
+`;
