@@ -74,7 +74,7 @@ function chooseHighestPriorityTransform(originalObj: SomeObj) {
     return function withObject(transforms: Transform[]): Transform | null {
         const transformGenerator = generateTransform(transforms);
         let transform = transformGenerator.next()
-        while (!transform.done && !objectPath.has(originalObj, unUnidotify(transform.value.source))) {
+        while (!transform.done && !objectPath.has(originalObj, unUnidotify(transform.value.source)) && !transform.value.target.defaultValue) {
             transform = transformGenerator.next();
         }
         return transform.done ? null : transform.value;
