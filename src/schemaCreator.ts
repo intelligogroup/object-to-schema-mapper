@@ -11,7 +11,7 @@ function mapObjectToSchema(obj: SomeObj, schema: SomeObj = {}): SomeObj {
     }
 
     return Object
-        .keys(obj)
+        .keys(pruneEmpty(obj))
         .reduce(
             (schema, key) => resolveOperation(schema, obj, key),
             schema
