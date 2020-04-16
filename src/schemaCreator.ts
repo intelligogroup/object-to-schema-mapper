@@ -3,6 +3,7 @@ import R from 'ramda';
 import { SomeObj } from './utils/types';
 import { resolveValueArchtype, resolveType } from './utils/generalUtil';
 import { assignSchema } from './utils/transform';
+import _ = require('lodash')
 
 function mapObjectToSchema(obj: SomeObj, schema: SomeObj = {}): SomeObj {
     if (!obj) {
@@ -33,6 +34,27 @@ function resolveOperation(schema: SomeObj, obj: any, key: string): SomeObj {
             return assignSchema(schema, key, handleObjectValues(nestedValue, schema, key));
     }
 }
+
+function pruneEmpty(obj) {
+
+    return function prune(current) {
+        _.forOwn(current, function (value, key) {
+            if (_.isUndefined(value) || _.isNull(value) || _.isNaN(value) ||
+                (_.isString(value) && _.isEmpty(value)) ||
+                (_.isObject(value) && _.isEmpty(prune(value)))) {
+
+                delete current[key];
+            }
+        });
+        // remove any leftover undefined values from the delete 
+        // operation on an array
+        if (_.isArray(current)) _.pull(current, undefined);
+
+        return current;
+
+    }(_.cloneDeep(obj));  // Do not modify the original object, create a clone instead
+}
+
 
 function handleEmptyValue(schema: SomeObj, key: string) {
     const value = schema[key];
