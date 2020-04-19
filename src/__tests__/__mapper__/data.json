@@ -6,6 +6,7 @@
             "pastPositions": ["a", "b", "c", "d"],
             "currentPosition": "e"
         },
+        "nicknames": ["john, johnny, john-boy, bigJ", "bbj", "mj"],
         "addes": [{ "street": "s1", "house": "h1" }, { "street": "s2", "house": "h2" }],
         "addesB": [
           { "street": "wall street", "house": "h1B" }, 

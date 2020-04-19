@@ -60,6 +60,7 @@ const titleCase = applyToOneOrMany<string, string>(str => str
     .join(' ')
 )
 const toDate = applyToOneOrMany<string, Date>(str => new Date(str));
+const stringToArray = applyToOneOrMany<string, string[]>((str, separator) => str.split(separator as string));
 
 const strategies = {
     predefinedTransformations: {
@@ -67,6 +68,8 @@ const strategies = {
         toLowerCase: (str: string | string[]) => toLowerCase(str),
         titleCase: (str: string | string[]) => titleCase(str),
         toDate: (str: string | string[]) => toDate(str),
+        arrayToString: (arr: string[], separator: string) => arr.join(separator),
+        stringToArray: (str: string | string[], separator: string) => stringToArray(str, separator),
     }
 }
 
@@ -111,9 +114,12 @@ function treatLeafsMutation(originalObj: SomeObj, treeLeafs: TreeLeaf[], targetO
             if (target.predefinedTransformations) {
                 valueToSet = target
                     .predefinedTransformations
-                    .reduce(
-                        (finalValue, transformationName) =>
-                            (strategies.predefinedTransformations[transformationName] || identity)(finalValue),
+                    .reduceRight(
+                        (finalValue, predefinedTransformation) => {
+                            const transformationName = predefinedTransformation?.transformation;
+                            const transformationArgs = predefinedTransformation?.transformationArgs ?? undefined;
+                            return (strategies.predefinedTransformations[transformationName] ?? identity)(finalValue, transformationArgs);
+                        },
                         valueToSet
                     );
             }

@@ -11,7 +11,9 @@
             "source": "person.dateOfBirth",
             "target": {
                 "path": "dob",
-                "predefinedTransformations": ["toDate"]
+                "predefinedTransformations": [
+                    "toDate"
+                ]
             }
         },
         {
@@ -28,14 +30,39 @@
             "source": "person.positions.pastPositions",
             "target": {
                 "path": "jobs.lastPositions",
-                "predefinedTransformations": ["titleCase"]
+                "predefinedTransformations": [
+                    {
+                        "transformation": "titleCase"
+                    },
+                    {
+                        "transformation": "arrayToString",
+                        "transformationArgs": ", "
+                    }
+                ]
+            }
+        },
+        {
+            "source": "person.nicknames",
+            "target": {
+                "path": "names.nicknames",
+                "predefinedTransformations": [
+                    {
+                        "transformation": "stringToArray",
+                        "transformationArgs": ", "
+                    },
+                    {
+                        "transformation": "titleCase"
+                    }
+                ]
             }
         },
         {
             "source": "person.positions.currentPosition",
             "target": {
                 "path": "jobs.currentPosition",
-                "predefinedTransformations": ["titleCase"]
+                "predefinedTransformations": [
+                    "titleCase"
+                ]
             }
         },
         {
@@ -60,7 +87,9 @@
             "source": "person.addesB[].street",
             "target": {
                 "path": "addresses[].streetAddress",
-                "predefinedTransformations": ["titleCase"]
+                "predefinedTransformations": [
+                    "titleCase"
+                ]
             }
         },
         {
