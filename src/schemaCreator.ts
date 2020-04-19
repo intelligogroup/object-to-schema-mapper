@@ -80,7 +80,7 @@ function handleArrayValues(nestedValue: any[], schemaValue: any[]) {
         );
         return [arraySchema];
     } else {
-        const type = resolveType(nestedValue);
+        const type = resolveType(nestedValue[0]);
         return [
             JSON.stringify({
                 type: type.toLowerCase(),
