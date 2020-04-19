@@ -9,11 +9,11 @@ export function* generateTransform(transforms: Transform[]): Iterator<Transform>
     }
 }
 
-export function applyToOneOrMany<P, A>(fn: (oneOrMany: P) => A) {
-    return function withFunction(oneOrMany: P | P[]): A | A[] {
+export function applyToOneOrMany<P, A>(fn: (oneOrMany: P, args?: string | string[]) => A) {
+    return function withFunction(oneOrMany: P | P[], args?: string | string[]): A | A[] {
         return Array.isArray(oneOrMany)
-            ? (oneOrMany as P[]).map(fn)
-            : fn(oneOrMany as P)
+            ? (oneOrMany as P[]).flatMap(one => fn(one, args))
+            : fn(oneOrMany as P, args)
     }
 }
 

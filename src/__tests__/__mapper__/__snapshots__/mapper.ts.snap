@@ -13,20 +13,28 @@ Object {
     },
     Object {
       "houseNumber": "h1B",
-      "streetAddress": "Wall Street",
+      "streetAddress": "wall street",
     },
     Object {
       "houseNumber": "h2B",
-      "streetAddress": "S2B",
+      "streetAddress": "s2B",
     },
   ],
+  "dob": "10/14/88",
   "jobs": Object {
-    "currentPosition": "E",
-    "lastPositions": Array [
-      "A",
-      "B",
-      "C",
-      "D",
+    "currentPosition": "e",
+    "lastPositions": "A, B, C, D",
+  },
+  "names": Object {
+    "first": "john",
+    "last": "doe",
+    "nicknames": Array [
+      "John",
+      "Johnny",
+      "John-boy",
+      "BigJ",
+      "Bbj",
+      "Mj",
     ],
   },
   "other": Array [
