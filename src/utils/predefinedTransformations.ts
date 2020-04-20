@@ -7,7 +7,7 @@ const titleCase = applyToOneOrMany<string, string>(str => str
     .map(word => `${word[0].toUpperCase()}${word.slice(1)}`)
     .join(' ')
 )
-const toDate = applyToOneOrMany<string, Date>(str => new Date(str));
+const toDate = applyToOneOrMany<string, string>(str => new Date(str).toISOString());
 const stringToArray = applyToOneOrMany<string, string[]>((str, separator) => str.split(separator as string));
 
 export const strategies = {
