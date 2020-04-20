@@ -20,7 +20,21 @@ Object {
       "streetAddress": "s2B",
     },
   ],
-  "dob": "10/14/88",
+  "d": Object {
+    "Dates": Array [
+      "1/1/66",
+      "10/14/2026",
+    ],
+  },
+  "dates": Array [
+    Object {
+      "dob": "1/1/66",
+    },
+    Object {
+      "dod": "10/14/2026",
+    },
+  ],
+  "dob": "1/1/66",
   "jobs": Object {
     "currentPosition": "e",
     "lastPositions": "A, B, C, D",

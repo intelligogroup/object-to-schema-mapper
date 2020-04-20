@@ -109,6 +109,30 @@
             "target": {
                 "path": "some.time[].test[].no"
             }
+        },
+        {
+            "source": "person.dateOfBirth",
+            "target": {
+                "path": "d.Dates[]"
+            }
+        },
+        {
+            "source": "person.dateOfDeath",
+            "target": {
+                "path": "d.Dates[]"
+            }
+        },
+        {
+            "source": "person.dateOfBirth",
+            "target": {
+                "path": "dates[].dob"
+            }
+        },
+        {
+            "source": "person.dateOfDeath",
+            "target": {
+                "path": "dates[].dod"
+            }
         }
     ]
 }

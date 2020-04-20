@@ -1,7 +1,8 @@
 {
     "person": {
         "name": { "mname": "MNAME" },
-        "dateOfBirth": "10/14/88",
+        "dateOfBirth": "1/1/66",
+        "dateOfDeath": "10/14/2026",
         "positions": {
             "pastPositions": ["a", "b", "c", "d"],
             "currentPosition": "e"
