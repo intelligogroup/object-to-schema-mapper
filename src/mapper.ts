@@ -11,8 +11,8 @@ import {
     groupTransformsByTarget,
     sortTransformsByPriority,
     pruneEmpty,
-    applyToOneOrMany,
 } from './utils/transform';
+import { strategies } from './utils/predefinedTransformations';
 
 function mapObject(originalObj: SomeObj, transformations: Transform[]) {
     if (!transformations || transformations.length == 0) {
@@ -52,35 +52,22 @@ function treatTreeMutation(originalObj: SomeObj, treeEntries: any[], transformat
     });
 }
 
-const toLowerCase = applyToOneOrMany<string, string>(str => str.toLowerCase());
-const toUpperCase = applyToOneOrMany<string, string>(str => str.toUpperCase());
-const titleCase = applyToOneOrMany<string, string>(str => str
-    .split(/\s/)
-    .map(word => `${word[0].toUpperCase()}${word.slice(1)}`)
-    .join(' ')
-)
-const toDate = applyToOneOrMany<string, Date>(str => new Date(str));
-const stringToArray = applyToOneOrMany<string, string[]>((str, separator) => str.split(separator as string));
+function chooseHighestPriorityTransforms(originalObj: SomeObj) {
+    return function withObject(transforms: Transform[]): Transform[] {
+        if (transforms.every(transform => transform.target.path.includes('[]'))) {
+            return transforms;
+        }
 
-const strategies = {
-    predefinedTransformations: {
-        toUpperCase: (str: string | string[]) => toUpperCase(str),
-        toLowerCase: (str: string | string[]) => toLowerCase(str),
-        titleCase: (str: string | string[]) => titleCase(str),
-        toDate: (str: string | string[]) => toDate(str),
-        arrayToString: (arr: string[], separator: string) => arr.join(separator),
-        stringToArray: (str: string | string[], separator: string) => stringToArray(str, separator),
-    }
-}
-
-function chooseHighestPriorityTransform(originalObj: SomeObj) {
-    return function withObject(transforms: Transform[]): Transform | null {
         const transformGenerator = generateTransform(transforms);
-        let transform = transformGenerator.next()
-        while (!transform.done && !objectPath.has(originalObj, unUnidotify(transform.value.source)) && !transform.value.target.defaultValue) {
+        let transform = transformGenerator.next();
+        while (
+            !transform.done
+            && !objectPath.has(originalObj, unUnidotify(transform.value.source))
+            && !transform.value.target.defaultValue
+        ) {
             transform = transformGenerator.next();
         }
-        return transform.done ? null : transform.value;
+        return transform.done ? [] : [transform.value];
     }
 }
 
@@ -98,10 +85,10 @@ function eliminateLowPriority(originalObj: SomeObj, treeLeafs: TreeLeaf[]): Tree
         .entries(tranformsByTarget)
         .map(([path, transforms]) => [
             path,
-            chooseHighestPriorityTransform(originalObj)(sortTransformsByPriority(transforms))
+            chooseHighestPriorityTransforms(originalObj)(sortTransformsByPriority(transforms))
         ])
-        .filter(([_, transforms]) => transforms != null)
-        .map(([_, transform]) => transform)
+        .filter(([_, transforms]) => (transforms as Transform[]).length)
+        .flatMap(([_, transforms]) => (transforms as Transform[]).map(identity))
     const priorityTreeLeafs = transformsToTreeLeafs(highestPriorityTransforms as Transform[]);
     return priorityTreeLeafs;
 }
@@ -124,7 +111,11 @@ function treatLeafsMutation(originalObj: SomeObj, treeLeafs: TreeLeaf[], targetO
                     );
             }
             if (target.path.includes('[]')) {
-                objectPath.push(targetObject, target.path.split('[]')[0], valueToSet);
+                const splitTargetByArray = target.path.split('[]');
+                const valueToPush = R.isEmpty(splitTargetByArray[1])
+                    ? valueToSet
+                    : { [splitTargetByArray[1].slice(1)]: valueToSet };
+                objectPath.push(targetObject, splitTargetByArray[0], valueToPush);
             } else {
                 objectPath.set(targetObject, target.path, valueToSet);
             }
