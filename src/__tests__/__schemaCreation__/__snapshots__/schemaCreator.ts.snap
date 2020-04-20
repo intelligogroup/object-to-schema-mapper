@@ -18,13 +18,13 @@ Object {
     "currentPosition": "{\\"type\\":\\"string\\",\\"example\\":\\"e\\"}",
     "dateOfBirth": "{\\"type\\":\\"string\\",\\"example\\":\\"10/14/88\\"}",
     "interests": Array [
-      "{\\"type\\":\\"array\\",\\"example\\":\\"alcoholism\\"}",
+      "{\\"type\\":\\"string\\",\\"example\\":\\"alcoholism\\"}",
     ],
     "name": Object {
       "mname": "{\\"type\\":\\"string\\",\\"example\\":\\"MNAME\\"}",
     },
     "pastPositions": Array [
-      "{\\"type\\":\\"array\\",\\"example\\":\\"a\\"}",
+      "{\\"type\\":\\"string\\",\\"example\\":\\"a\\"}",
     ],
     "taho": Array [
       Object {
