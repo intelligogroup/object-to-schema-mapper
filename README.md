@@ -35,7 +35,7 @@ One major rule should be preserved: The number of array-nested values extracted 
   }
 }
 ```
-If there is only the need to extract the addresses array, WITHOUT changing the nested value names, the configuration will look like:
+If there is only the need to extract the addresses array, without changing the key names in the array, the configuration will look like:
 ```
 {
   "source": "person.addresses",
@@ -61,7 +61,7 @@ This will result in the following object:
 }
 ```
 
-If there's a need to alter each value inside an array, this will be expressed through the following configuration:
+If there's a need to alter each key inside an array, this will be expressed through the following configuration:
 ```
 {
   "source": "person.addresses[].street",
@@ -71,9 +71,9 @@ If there's a need to alter each value inside an array, this will be expressed th
 }
 ```
 
-This configuration expresses that `addresses` in the source and `PersonAddresses` in the target are arrays in which there are nested values that should be mapped one to another: `street` to `streetName`.
+This configuration expresses that `addresses` in the source and `PersonAddresses` in the target object are arrays which have object elements with keys that should be mapped one to another: `street` to `streetName`.
 
-As you can see, there is one level of `[]` nesting in `source` and `target`. This is the rule that should be preserved.
+As you can see, there is one level of array (`[]`) nesting in `source` and `target`. This is the rule that should be preserved.
 
 For reference: here's a complex object and possible mapping configurations that will be applied to It:
 
