@@ -10,6 +10,19 @@ const titleCase = applyToOneOrMany<string, string>(str => str
 const toDate = applyToOneOrMany<string, string>(str => new Date(str).toISOString());
 const stringToArray = applyToOneOrMany<string, string[]>((str, separator) => str.split(separator as string));
 
+function fromTracerDate(tracerDate: string) {
+
+    if (!tracerDate) {
+        return;
+    }
+
+    const year = tracerDate.substr(0, 4);
+    const month = tracerDate.substr(4, 2);
+    const day = tracerDate.substr(6, 2);
+
+    return new Date(`${year}-${month}-${day}`);
+}
+
 export const strategies = {
     predefinedTransformations: {
         toUpperCase: (str: string | string[]) => toUpperCase(str),
@@ -18,5 +31,6 @@ export const strategies = {
         toDate: (str: string | string[]) => toDate(str),
         arrayToString: (arr: string[], separator: string) => arr.join(separator),
         stringToArray: (str: string | string[], separator: string) => stringToArray(str, separator),
+        fromTracerDate
     }
 }
