@@ -41,6 +41,11 @@ function treatTreeMutation(originalObj: SomeObj, treeEntries: any[], transformat
     treeEntries.forEach(([source, _]) => {
 
         const arrayValuesToSet = objectPath.get(originalObj, source);
+
+        if (!arrayValuesToSet) {
+            return
+        }
+
         const nextTargets = getSubTransformations(transformations, source);
         nextTargets.forEach(({ superTarget, transforms }) => {
 
