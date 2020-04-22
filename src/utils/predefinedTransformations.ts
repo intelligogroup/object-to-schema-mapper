@@ -10,15 +10,15 @@ const titleCase = applyToOneOrMany<string, string>(str => str
 const toDate = applyToOneOrMany<string, string>(str => new Date(str).toISOString());
 const stringToArray = applyToOneOrMany<string, string[]>((str, separator) => str.split(separator as string));
 
-function fromTracerDate(tracerDate: string) {
+function fromTracerDate(tracerDate: number) {
 
     if (!tracerDate) {
         return;
     }
 
-    const year = tracerDate.substr(0, 4);
-    const month = tracerDate.substr(4, 2);
-    const day = tracerDate.substr(6, 2);
+    const year = String(tracerDate).substr(0, 4);
+    const month = String(tracerDate).substr(4, 2);
+    const day = String(tracerDate).substr(6, 2);
 
     return new Date(`${year}-${month}-${day}`);
 }
