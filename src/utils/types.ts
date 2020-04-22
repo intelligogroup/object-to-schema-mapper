@@ -12,6 +12,7 @@ interface PredefinedTransformation {
     | 'toDate'
     | 'stringToArray'
     | 'arrayToString'
+    | 'fromTracerDate'
 }
 
 type TreeLeaf = [string, Transform['target'][]]
