@@ -20,7 +20,7 @@ function fromTracerDate(tracerDate: number) {
     const month = String(tracerDate).substr(4, 2);
     const day = String(tracerDate).substr(6, 2);
 
-    return new Date(`${year}-${month}-${day}`);
+    return new Date(`${year}-${month}-${day}`).toString();
 }
 
 export const strategies = {
