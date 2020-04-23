@@ -23,6 +23,65 @@ function fromTracerDate(tracerDate: number) {
     return new Date(`${year}-${month}-${day}`).toString();
 }
 
+function tracerPropertyDocumentType(documentType: string) {
+
+    let value;
+
+    switch (documentType) {
+        
+        case 'G': {
+            value = 'Grant Deed/Deed of Trust';
+            break;
+        }
+
+        case 'H': {
+            value = 'High Liability';
+            break;
+        }
+
+        case 'Q': {
+            value = 'Quitclaim/Deed of Trust';
+            break;
+        }
+
+        case 'W': {
+            value = 'Warranty Deed/Deed of Trust';
+            break;
+        }
+
+        default: {
+            value = documentType
+            break;
+        }
+    }
+
+    return value;
+}
+
+function tracerPropertyTransferType(documentType: string) {
+    
+    let value;
+
+    switch (documentType) {
+        case 'R': {
+            value = 'Resale';
+            break;
+        }
+
+        case 'S': {
+            value = 'Subdivision';
+            break;
+        }
+
+        default: {
+            value = documentType
+            break;
+        }
+    }
+
+    return value;
+}
+
 export const strategies = {
     predefinedTransformations: {
         toUpperCase: (str: string | string[]) => toUpperCase(str),
@@ -31,6 +90,9 @@ export const strategies = {
         toDate: (str: string | string[]) => toDate(str),
         arrayToString: (arr: string[], separator: string) => arr.join(separator),
         stringToArray: (str: string | string[], separator: string) => stringToArray(str, separator),
-        fromTracerDate
+        fromTracerDate,
+        tracerPropertyDocumentType,
+        tracerPropertyTransferType
+
     }
 }
