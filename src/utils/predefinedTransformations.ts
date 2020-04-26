@@ -28,7 +28,7 @@ function tracerPropertyDocumentType(documentType: string) {
     let value;
 
     switch (documentType) {
-        
+
         case 'G': {
             value = 'Grant Deed/Deed of Trust';
             break;
@@ -59,7 +59,7 @@ function tracerPropertyDocumentType(documentType: string) {
 }
 
 function tracerPropertyTransferType(documentType: string) {
-    
+
     let value;
 
     switch (documentType) {
@@ -82,6 +82,31 @@ function tracerPropertyTransferType(documentType: string) {
     return value;
 }
 
+function companyAddressType(addressType: string) {
+    let value;
+
+    switch (addressType) {
+        case 'HQ': {
+            value = 'HEADQUARTERS';
+            break;
+        }
+
+        case 'SAGENT ADDRESS': {
+            value = 'OFFICER';
+            break;
+        }
+
+        default: {
+            value = addressType.toLowerCase().includes('officer') ?
+                'OFFICER' :
+                'OTHER'
+            break;
+        }
+    }
+
+    return value;
+}
+
 export const strategies = {
     predefinedTransformations: {
         toUpperCase: (str: string | string[]) => toUpperCase(str),
@@ -92,7 +117,7 @@ export const strategies = {
         stringToArray: (str: string | string[], separator: string) => stringToArray(str, separator),
         fromTracerDate,
         tracerPropertyDocumentType,
-        tracerPropertyTransferType
-
+        tracerPropertyTransferType,
+        companyAddressType
     }
 }
