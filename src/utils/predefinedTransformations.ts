@@ -91,7 +91,7 @@ function companyAddressType(addressType: string) {
             break;
         }
 
-        case 'SAGENT ADDRESS': {
+        case 'AGENT ADDRESS': {
             value = 'OFFICER';
             break;
         }
