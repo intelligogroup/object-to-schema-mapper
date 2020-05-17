@@ -82,6 +82,15 @@ function tracerPropertyTransferType(documentType: string) {
     return value;
 }
 
+function dateToYear(date: string) {
+
+    if (!date || !new Date(date).getFullYear()) {
+        return
+    }
+
+    return new Date(date).getFullYear();
+}
+
 function companyAddressType(addressType: string) {
     let value;
 
@@ -118,6 +127,7 @@ export const strategies = {
         fromTracerDate,
         tracerPropertyDocumentType,
         tracerPropertyTransferType,
-        companyAddressType
+        companyAddressType,
+        dateToYear
     }
 }
