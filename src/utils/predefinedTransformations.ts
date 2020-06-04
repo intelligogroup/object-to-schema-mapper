@@ -1,4 +1,5 @@
 import { applyToOneOrMany } from './transform';
+import { get } from 'object-path';
 
 const toLowerCase = applyToOneOrMany<string, string>(str => str.toLowerCase());
 const toUpperCase = applyToOneOrMany<string, string>(str => str.toUpperCase());
@@ -91,6 +92,19 @@ function dateToYear(date: string) {
     return new Date(date).getFullYear();
 }
 
+function arrayObjectKeyToString(value, options) {
+
+    const { path, separator } = options;
+    if (!Array.isArray(value)) {
+        throw new Error('the value is not array');
+    }
+
+    return value
+        .map(entry => get(entry, path))
+        .join(separator);
+
+}
+
 function companyAddressType(addressType: string) {
     let value;
 
@@ -128,6 +142,7 @@ export const strategies = {
         tracerPropertyDocumentType,
         tracerPropertyTransferType,
         companyAddressType,
-        dateToYear
+        dateToYear,
+        arrayObjectKeyToString
     }
 }

@@ -5,14 +5,9 @@ type InstructionStrategies = {
 }
 
 interface PredefinedTransformation {
-    transformationArgs?: any 
-    transformation: 'toUpperCase'
-    | 'toLowerCase'
-    | 'titleCase'
-    | 'toDate'
-    | 'stringToArray'
-    | 'arrayToString'
-    | 'fromTracerDate'
+    transformationArgs?: any
+    transformation: string,
+    options?: { [key: string]: any }
 }
 
 type TreeLeaf = [string, Transform['target'][]]
