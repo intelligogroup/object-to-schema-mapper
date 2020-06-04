@@ -109,8 +109,10 @@ function treatLeafsMutation(originalObj: SomeObj, treeLeafs: TreeLeaf[], targetO
                     .reduceRight(
                         (finalValue, predefinedTransformation) => {
                             const transformationName = predefinedTransformation?.transformation;
-                            const transformationArgs = predefinedTransformation?.transformationArgs ?? undefined;
-                            return (strategies.predefinedTransformations[transformationName] ?? identity)(finalValue, transformationArgs);
+                            const transformationArgs = predefinedTransformation?.transformationArgs;
+                            const options = predefinedTransformation?.options;
+
+                            return (strategies.predefinedTransformations[transformationName] ?? identity)(finalValue, transformationArgs || options);
                         },
                         valueToSet
                     );
