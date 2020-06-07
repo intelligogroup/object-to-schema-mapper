@@ -100,6 +100,7 @@ function arrayObjectKeyToString(value, options) {
     }
 
     return value
+        .filter(entry => get(entry, path))
         .map(entry => get(entry, path))
         .join(separator);
 
