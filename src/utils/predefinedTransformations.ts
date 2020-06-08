@@ -151,7 +151,7 @@ function fieldConditionMapping(value, options) {
             break;
     }
 
-    return pass && valueToMap;
+    return pass ? valueToMap : undefined;
 }
 
 
