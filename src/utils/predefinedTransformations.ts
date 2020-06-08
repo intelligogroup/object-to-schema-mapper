@@ -131,6 +131,31 @@ function companyAddressType(addressType: string) {
     return value;
 }
 
+function fieldConditionMapping(value, options) {
+
+    const {
+        pathToCheck,
+        condition,
+        conditionValue,
+        valueToMap
+    } = options;
+
+    const valueToCheck = get(value, pathToCheck);
+
+    let pass;
+
+    switch (condition) {
+        case 'exists':
+            const flag = valueToCheck !== undefined && valueToCheck !== null;
+            pass = conditionValue ? flag : !flag;
+            break;
+    }
+
+    return pass && valueToMap;
+}
+
+
+
 export const strategies = {
     predefinedTransformations: {
         toUpperCase: (str: string | string[]) => toUpperCase(str),
@@ -144,6 +169,7 @@ export const strategies = {
         tracerPropertyTransferType,
         companyAddressType,
         dateToYear,
-        arrayObjectKeyToString
+        arrayObjectKeyToString,
+        fieldConditionMapping
     }
 }
