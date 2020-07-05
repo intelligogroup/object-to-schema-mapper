@@ -138,9 +138,14 @@ function fieldConditionMapping(value, options) {
         condition,
         conditionValue,
         valueToMap
+    }: {
+        pathToCheck: string,
+        condition: 'exists' | 'equals' | 'contains' | 'notEqual' | 'notContain',
+        conditionValue: string,
+        valueToMap: string | number
     } = options;
 
-    const valueToCheck = get(value, pathToCheck);
+    const valueToCheck: string = get(value, pathToCheck);
 
     let pass;
 
@@ -148,6 +153,19 @@ function fieldConditionMapping(value, options) {
         case 'exists':
             const flag = valueToCheck !== undefined && valueToCheck !== null;
             pass = conditionValue ? flag : !flag;
+            break;
+        case 'equals':
+            pass = (valueToCheck && conditionValue === valueToCheck);
+            break;
+        case 'contains':
+            pass = (valueToCheck && (valueToCheck || '').toLowerCase().includes(conditionValue.toLowerCase()));;
+            break;
+        
+        case 'notEqual':
+            pass = (valueToCheck && !(conditionValue === valueToCheck));
+            break;
+        case 'notContain':
+            pass = (valueToCheck && !(valueToCheck || '').toLowerCase().includes(conditionValue.toLowerCase()));;
             break;
     }
 
