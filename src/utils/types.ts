@@ -1,3 +1,5 @@
+import { Interface } from "readline"
+
 type SomeObj = { [key: string]: any }
 
 type InstructionStrategies = {
@@ -12,18 +14,21 @@ interface PredefinedTransformation {
 
 type TreeLeaf = [string, Transform['target'][]]
 
+export interface ITarget {
+
+    path: string,
+    priority?: number,
+    defaultValue?: any,
+    conditionalValue?: {
+        targetPathCondition: string,
+        value: any
+    }
+    predefinedTransformations?: PredefinedTransformation[]
+}
 type Transform = {
     source: string,
-    target: {
-        path: string,
-        priority?: number,
-        defaultValue?: any,
-        conditionalValue?: {
-            targetPathCondition: string,
-            value: any
-        }
-        predefinedTransformations?: PredefinedTransformation[]
-    }
+    target: ITarget
+
 }
 
 type ValType = 'ARRAY'

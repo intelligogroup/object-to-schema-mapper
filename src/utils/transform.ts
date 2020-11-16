@@ -41,7 +41,7 @@ export function pruneEmpty<T extends SomeObj>(obj: T) {
         _.forOwn(current, function (value: any, key: string | number) {
             if (_.isUndefined(value) || _.isNull(value) || _.isNaN(value) ||
                 (_.isString(value) && _.isEmpty(value)) ||
-                (_.isObject(value) && _.isEmpty(prune(value)))) {
+                (_.isObject(value) && !_.isDate(value) && _.isEmpty(prune(value)))) {
                 delete current[key];
             }
         });
