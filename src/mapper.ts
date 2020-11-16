@@ -1,6 +1,6 @@
 import objectPath from 'object-path';
 import R from 'ramda';
-
+import { ITarget } from './utils/types';
 import { SomeObj, Transform, TreeLeaf, } from './utils/types';
 import { unidotify, unUnidotify } from './utils/stringUtil';
 import { unique, identity } from './utils/generalUtil';
@@ -65,12 +65,18 @@ function chooseHighestPriorityTransforms(originalObj: SomeObj) {
 
         const transformGenerator = generateTransform(transforms);
         let transform = transformGenerator.next();
+        let valueToSet = objectPath.get(originalObj, unUnidotify(transform.value.source)) || transform.value.target.defaultValue || null;
+
         while (
             !transform.done
-            && !objectPath.has(originalObj, unUnidotify(transform.value.source))
+            && !(objectPath.has(originalObj, unUnidotify(transform.value.source))
+                && (!transform.value.target.predefinedTransformations?.length
+                    || getValueAfterTransformations(transform.value.target, valueToSet)))
             && !transform.value.target.defaultValue
         ) {
+
             transform = transformGenerator.next();
+            valueToSet = objectPath.get(originalObj, unUnidotify(transform.value.source)) || transform.value.target.defaultValue || null;
         }
         return transform.done ? [] : [transform.value];
     }
@@ -93,9 +99,23 @@ function eliminateLowPriority(originalObj: SomeObj, treeLeafs: TreeLeaf[]): Tree
             chooseHighestPriorityTransforms(originalObj)(sortTransformsByPriority(transforms))
         ])
         .filter(([_, transforms]) => (transforms as Transform[]).length)
-        .flatMap(([_, transforms]) => (transforms as Transform[]).map(identity))
+        .flatMap(([_, transforms]) => (transforms as Transform[]).map(identity));
     const priorityTreeLeafs = transformsToTreeLeafs(highestPriorityTransforms as Transform[]);
     return priorityTreeLeafs;
+}
+
+function getValueAfterTransformations(target: ITarget, valueToSet: SomeObj) {
+    return target?.predefinedTransformations
+        ?.reduceRight(
+            (finalValue, predefinedTransformation) => {
+                const transformationName = predefinedTransformation?.transformation;
+                const transformationArgs = predefinedTransformation?.transformationArgs;
+                const options = predefinedTransformation?.options;
+
+                return (strategies.predefinedTransformations[transformationName] ?? identity)(finalValue, transformationArgs || options);
+            },
+            valueToSet
+        );
 }
 
 function treatLeafsMutation(originalObj: SomeObj, treeLeafs: TreeLeaf[], targetObject: SomeObj) {
@@ -104,18 +124,7 @@ function treatLeafsMutation(originalObj: SomeObj, treeLeafs: TreeLeaf[], targetO
         mappingsArray.forEach(target => {
             let valueToSet = objectPath.get(originalObj, unUnidotify(source)) || target.defaultValue || null;
             if (target.predefinedTransformations) {
-                valueToSet = target
-                    .predefinedTransformations
-                    .reduceRight(
-                        (finalValue, predefinedTransformation) => {
-                            const transformationName = predefinedTransformation?.transformation;
-                            const transformationArgs = predefinedTransformation?.transformationArgs;
-                            const options = predefinedTransformation?.options;
-
-                            return (strategies.predefinedTransformations[transformationName] ?? identity)(finalValue, transformationArgs || options);
-                        },
-                        valueToSet
-                    );
+                valueToSet = getValueAfterTransformations(target, valueToSet)
             }
             if (target.path.includes('[]')) {
                 const splitTargetByArray = target.path.split('[]');
