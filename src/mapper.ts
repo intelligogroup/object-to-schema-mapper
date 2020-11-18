@@ -74,8 +74,13 @@ function chooseHighestPriorityTransforms(originalObj: SomeObj) {
                     || getValueAfterTransformations(transform.value.target, valueToSet)))
             && !transform.value.target.defaultValue
         ) {
-
+            
             transform = transformGenerator.next();
+            
+            if (transform.done) {
+                continue;
+            }
+
             valueToSet = objectPath.get(originalObj, unUnidotify(transform.value.source)) || transform.value.target.defaultValue || null;
         }
         return transform.done ? [] : [transform.value];
