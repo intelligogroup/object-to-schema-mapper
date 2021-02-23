@@ -22,7 +22,7 @@
     "@types/node": "^13.9.8"
   },
   "dependencies": {
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "object-path": "^0.11.4",
     "ramda": "^0.26.1"
   }
