@@ -24,6 +24,6 @@
   "dependencies": {
     "lodash": "^4.17.15",
     "object-path": "^0.11.4",
-    "ramda": "^0.26.1"
+    "ramda": "^0.27.2"
   }
 }
