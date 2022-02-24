@@ -103,7 +103,18 @@ function arrayObjectKeyToString(value, options) {
         .filter(entry => get(entry, path))
         .map(entry => get(entry, path))
         .join(separator);
+}
 
+function arrayObjectKeyToArrayString(value, options) {
+
+    const { path, separator } = options;
+    if (!Array.isArray(value)) {
+        throw new Error('the value is not array');
+    }
+
+    return value
+        .filter(entry => get(entry, path))
+        .map(entry => get(entry, path));
 }
 
 function companyAddressType(addressType: string) {
@@ -194,6 +205,7 @@ export const strategies = {
         companyAddressType,
         dateToYear,
         arrayObjectKeyToString,
+        arrayObjectKeyToArrayString,
         fieldConditionMapping
     }
 }
