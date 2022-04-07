@@ -190,6 +190,31 @@ function fieldConditionMapping(value, options) {
 }
 
 
+function joinObjectKeysToString(value, options) {
+    const {
+        keysToJoin,
+        seperator
+    }: {
+        keysToJoin: string[],
+        seperator: string
+    } = options;
+
+    let valueToMap = '';
+
+    for (const key of keysToJoin) {
+        const valueToCheck: string = get(value, key);
+        if (valueToCheck) {
+            if (seperator) {
+                valueToMap = valueToMap ? valueToMap + `${seperator} ${valueToCheck}` : valueToCheck;
+                continue;
+            }
+            valueToMap = valueToMap ? valueToMap + ` ${valueToCheck}` : valueToCheck;
+        }
+        valueToMap = valueToMap.trim();
+    }
+    return valueToMap;
+}
+
 
 export const strategies = {
     predefinedTransformations: {
@@ -206,6 +231,7 @@ export const strategies = {
         dateToYear,
         arrayObjectKeyToString,
         arrayObjectKeyToArrayString,
-        fieldConditionMapping
+        fieldConditionMapping,
+        joinObjectKeysToString
     }
 }
