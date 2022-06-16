@@ -127,7 +127,8 @@ function treatLeafsMutation(originalObj: SomeObj, treeLeafs: TreeLeaf[], targetO
     const priorityTreeLeafs = eliminateLowPriority(originalObj, treeLeafs);
     priorityTreeLeafs.forEach(([source, mappingsArray]) => {
         mappingsArray.forEach(target => {
-            let valueToSet = objectPath.get(originalObj, unUnidotify(source)) || target.defaultValue || null;
+            const value = objectPath.get(originalObj, unUnidotify(source));
+            let valueToSet = value === 0 ? value : (value || target.defaultValue || null);
             if (target.predefinedTransformations) {
                 valueToSet = getValueAfterTransformations(target, valueToSet)
             }
