@@ -88,10 +88,11 @@ function chooseHighestPriorityTransforms(originalObj: SomeObj) {
 }
 
 function transformsToTreeLeafs(transforms: Transform[]): TreeLeaf[] {
-    const grouped: { [path: string]: Transform[] } = R.groupBy((transform: Transform) => transform.source, transforms);
+    const grouped = R.groupBy((transform: Transform) => transform.source, transforms) as Partial<Record<string, Transform[]>>;
+
     return Object
         .entries(grouped)
-        .map(([path, transforms]) => [path, transforms.map(transform => transform.target)])
+        .map(([path, transforms]) => [path, (transforms ?? []).map(transform => transform.target)]);
 }
 
 function eliminateLowPriority(originalObj: SomeObj, treeLeafs: TreeLeaf[]): TreeLeaf[] {
@@ -170,7 +171,7 @@ function getSubTransformations(transformations: Transform[], immediateSource: st
         .entries(groupedTransforms)
         .map(([superTarget, value]) => ({
             superTarget,
-            transforms: value.map(el => el.innerTransformation)
+            transforms: value!.map(el => el.innerTransformation)
         }));
 }
 

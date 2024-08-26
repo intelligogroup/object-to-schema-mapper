@@ -3,11 +3,16 @@ import { get } from 'object-path';
 
 const toLowerCase = applyToOneOrMany<string, string>(str => str.toLowerCase());
 const toUpperCase = applyToOneOrMany<string, string>(str => str.toUpperCase());
-const titleCase = applyToOneOrMany<string, string>(str => str
-    .split(/\s/)
-    .map(word => `${word[0].toUpperCase()}${word.slice(1)}`)
-    .join(' ')
-)
+const titleCase = applyToOneOrMany<string, string>(titleCaseTransformer)
+const companyNameFormat = applyToOneOrMany<string, string>(companyNameTransformer)
+
+function titleCaseTransformer(str: string): string {
+    return str
+        .split(/\s/)
+        .map(word => `${word[0].toUpperCase()}${word.slice(1).toLowerCase()}`)
+        .join(' ')
+}
+
 const toDate = applyToOneOrMany<string, string>(str => new Date(str).toISOString());
 const stringToArray = applyToOneOrMany<string, string[]>((str, separator) => str.split(separator as string));
 
@@ -23,6 +28,7 @@ function fromTracerDate(tracerDate: number) {
 
     return new Date(`${year}-${month}-${day}`).toString();
 }
+
 
 function tracerPropertyDocumentType(documentType: string) {
 
@@ -216,11 +222,33 @@ function joinObjectKeysToString(value, options) {
 }
 
 
+function companyNameTransformer(str: string) {
+    const businessStructureAbbreviations = [
+        'Col', 'Corp', 'Inc', 'LC', 'LLC', 'LLLP', 'LLP', 'LP', 'Ltd', 'PC', 'PLLC', 'GP', 'Co'
+    ];
+
+    const businessStructureAbbreviationsSet = new Set(businessStructureAbbreviations.map(abbr => abbr.toLowerCase()));
+    let words = str.split(/\s/);
+    const lastWord = words[words.length - 1];
+    const isBusinessStructureAbbreviation = businessStructureAbbreviationsSet.has(lastWord.toLowerCase().replace('.', ''));
+
+    if (isBusinessStructureAbbreviation) {
+        const formattedName = titleCaseTransformer(words.slice(0, -1).join(' '));
+
+        return `${formattedName} ${lastWord}`;
+    }
+
+
+    return titleCaseTransformer(words.join(' '));
+}
+
+
 export const strategies = {
     predefinedTransformations: {
         toUpperCase: (str: string | string[]) => toUpperCase(str),
         toLowerCase: (str: string | string[]) => toLowerCase(str),
         titleCase: (str: string | string[]) => titleCase(str),
+        companyNameFormat: (str: string | string[]) => companyNameFormat(str),
         toDate: (str: string | string[]) => toDate(str),
         arrayToString: (arr: string[], separator: string) => arr.join(separator),
         stringToArray: (str: string | string[], separator: string) => stringToArray(str, separator),
