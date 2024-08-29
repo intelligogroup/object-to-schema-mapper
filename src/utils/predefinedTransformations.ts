@@ -221,27 +221,25 @@ function joinObjectKeysToString(value, options) {
     return valueToMap;
 }
 
-
 function companyNameTransformer(str: string) {
     const businessStructureAbbreviations = [
-        'Col', 'Corp', 'Inc', 'LC', 'LLC', 'LLLP', 'LLP', 'LP', 'Ltd', 'PC', 'PLLC', 'GP', 'Co'
+        "Col", "Corp", "Corp.", "Inc", "LC", "LLC", "LLLP", "LLP", "LP", "Ltd", "PC", "PLLC", "GP", "Co.", "col", "corp", "corp.", "inc", "lc", "llc", "lllp", "llp", "lp", "ltd", "pc", "pllc", "gp", "co"
     ];
 
-    const businessStructureAbbreviationsSet = new Set(businessStructureAbbreviations.map(abbr => abbr.toLowerCase()));
-    let words = str.split(/\s/);
-    const lastWord = words[words.length - 1];
-    const isBusinessStructureAbbreviation = businessStructureAbbreviationsSet.has(lastWord.toLowerCase().replace('.', ''));
+    const words = str.split(/\s/);
 
-    if (isBusinessStructureAbbreviation) {
-        const formattedName = titleCaseTransformer(words.slice(0, -1).join(' '));
+    const transformedWords = words.map(word => {
+        const lowercaseWord = word.toLowerCase();
 
-        return `${formattedName} ${lastWord}`;
-    }
+        if (businessStructureAbbreviations.some(abbr => lowercaseWord.includes(abbr.toLowerCase()))) {
+            return word;
+        }
 
+        return titleCaseTransformer(word);
+    });
 
-    return titleCaseTransformer(words.join(' '));
+    return transformedWords.join(' ');
 }
-
 
 export const strategies = {
     predefinedTransformations: {
