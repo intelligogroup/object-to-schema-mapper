@@ -7,7 +7,7 @@ const titleCase = applyToOneOrMany<string, string>(titleCaseTransformer)
 const companyNameFormat = applyToOneOrMany<string, string>(companyNameTransformer)
 
 function titleCaseTransformer(str: string): string {
-    return str
+    return str.trim()
         .split(/\s/)
         .map(word => `${word[0].toUpperCase()}${word.slice(1).toLowerCase()}`)
         .join(' ')
@@ -226,12 +226,14 @@ function companyNameTransformer(str: string) {
         "Col", "Corp", "Corp.", "Inc", "LC", "LLC", "LLLP", "LLP", "LP", "Ltd", "PC", "PLLC", "GP", "Co.", "col", "corp", "corp.", "inc", "lc", "llc", "lllp", "llp", "lp", "ltd", "pc", "pllc", "gp", "co"
     ];
 
-    const words = str.split(/\s/);
+    const words = str.trim().split(/\s/);
 
     const transformedWords = words.map(word => {
-        const lowercaseWord = word.toLowerCase();
+        const lowercaseWord = word.toLowerCase().replace(/,/g, '');
 
-        if (businessStructureAbbreviations.some(abbr => lowercaseWord.includes(abbr.toLowerCase()))) {
+
+
+        if (businessStructureAbbreviations.some(abbr => lowercaseWord === abbr.toLowerCase())) {
             return word;
         }
 
