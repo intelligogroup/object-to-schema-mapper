@@ -6,8 +6,13 @@ const toUpperCase = applyToOneOrMany<string, string>(str => str.toUpperCase());
 const titleCase = applyToOneOrMany<string, string>(titleCaseTransformer)
 const companyNameFormat = applyToOneOrMany<string, string>(companyNameTransformer)
 
-function titleCaseTransformer(str: string): string {
-    return str
+function titleCaseTransformer(str: string) {
+    if (str === undefined || str === null) {
+        throw new Error(`The value is not a string it is ${str}`);
+    }
+
+
+    return str.trim()
         .split(/\s/)
         .map(word => `${word[0].toUpperCase()}${word.slice(1).toLowerCase()}`)
         .join(' ')
@@ -221,27 +226,33 @@ function joinObjectKeysToString(value, options) {
     return valueToMap;
 }
 
-
 function companyNameTransformer(str: string) {
-    const businessStructureAbbreviations = [
-        'Col', 'Corp', 'Inc', 'LC', 'LLC', 'LLLP', 'LLP', 'LP', 'Ltd', 'PC', 'PLLC', 'GP', 'Co'
-    ];
-
-    const businessStructureAbbreviationsSet = new Set(businessStructureAbbreviations.map(abbr => abbr.toLowerCase()));
-    let words = str.split(/\s/);
-    const lastWord = words[words.length - 1];
-    const isBusinessStructureAbbreviation = businessStructureAbbreviationsSet.has(lastWord.toLowerCase().replace('.', ''));
-
-    if (isBusinessStructureAbbreviation) {
-        const formattedName = titleCaseTransformer(words.slice(0, -1).join(' '));
-
-        return `${formattedName} ${lastWord}`;
+    if (str === undefined || str === null) {
+        throw new Error(`The value is not a string it is ${str}`);
     }
 
+    const businessStructureAbbreviations = [
+        "Col", "Corp", "Corp.", "Inc", "LC", "LLC", "LLLP", "LLP", "LP", "Ltd", "PC", "PLLC", "GP",
+        "Co.", "col", "corp", "corp.", "inc", "lc", "llc", "lllp", "llp", "lp", "ltd", "pc", "pllc", "gp",
+        "co", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "UK", "US", "USA",
+        'AK', 'AL', 'AR', 'AS', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA', 'GU', 'HI', 'IA',
+        'ID', 'IL', 'IN', 'KS', 'KY', 'LA', 'MA', 'MD', 'ME', 'MI', 'MN', 'MO', 'MP', 'MS', 'MT',
+        'NC', 'ND', 'NE', 'NH', 'NJ', 'NM', 'NV', 'NY', 'OH', 'OK', 'OR', 'PA', 'PR', 'RI', 'SC', 'SD',
+        'TN', 'TX', 'UT', 'VA', 'VI', 'VT', 'WA', 'WI', 'WV', 'WY'
+    ];
 
-    return titleCaseTransformer(words.join(' '));
+    const words = str.trim().split(/\s/);
+
+    const transformedWords = words.map(word => {
+        if (businessStructureAbbreviations.some(abbr => word.replace(/,/g, '') === abbr)) {
+            return word;
+        }
+
+        return titleCaseTransformer(word);
+    });
+
+    return transformedWords.join(' ');
 }
-
 
 export const strategies = {
     predefinedTransformations: {
