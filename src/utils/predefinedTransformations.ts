@@ -6,7 +6,12 @@ const toUpperCase = applyToOneOrMany<string, string>(str => str.toUpperCase());
 const titleCase = applyToOneOrMany<string, string>(titleCaseTransformer)
 const companyNameFormat = applyToOneOrMany<string, string>(companyNameTransformer)
 
-function titleCaseTransformer(str: string): string {
+function titleCaseTransformer(str: string) {
+    if (str === undefined || str === null) {
+        throw new Error(`The value is not a string it is ${str}`);
+    }
+
+
     return str.trim()
         .split(/\s/)
         .map(word => `${word[0].toUpperCase()}${word.slice(1).toLowerCase()}`)
@@ -222,18 +227,24 @@ function joinObjectKeysToString(value, options) {
 }
 
 function companyNameTransformer(str: string) {
+    if (str === undefined || str === null) {
+        throw new Error(`The value is not a string it is ${str}`);
+    }
+
     const businessStructureAbbreviations = [
-        "Col", "Corp", "Corp.", "Inc", "LC", "LLC", "LLLP", "LLP", "LP", "Ltd", "PC", "PLLC", "GP", "Co.", "col", "corp", "corp.", "inc", "lc", "llc", "lllp", "llp", "lp", "ltd", "pc", "pllc", "gp", "co"
+        "Col", "Corp", "Corp.", "Inc", "LC", "LLC", "LLLP", "LLP", "LP", "Ltd", "PC", "PLLC", "GP",
+        "Co.", "col", "corp", "corp.", "inc", "lc", "llc", "lllp", "llp", "lp", "ltd", "pc", "pllc", "gp",
+        "co", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "UK", "US", "USA",
+        'AK', 'AL', 'AR', 'AS', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA', 'GU', 'HI', 'IA',
+        'ID', 'IL', 'IN', 'KS', 'KY', 'LA', 'MA', 'MD', 'ME', 'MI', 'MN', 'MO', 'MP', 'MS', 'MT',
+        'NC', 'ND', 'NE', 'NH', 'NJ', 'NM', 'NV', 'NY', 'OH', 'OK', 'OR', 'PA', 'PR', 'RI', 'SC', 'SD',
+        'TN', 'TX', 'UT', 'VA', 'VI', 'VT', 'WA', 'WI', 'WV', 'WY'
     ];
 
     const words = str.trim().split(/\s/);
 
     const transformedWords = words.map(word => {
-        const lowercaseWord = word.toLowerCase().replace(/,/g, '');
-
-
-
-        if (businessStructureAbbreviations.some(abbr => lowercaseWord === abbr.toLowerCase())) {
+        if (businessStructureAbbreviations.some(abbr => word.replace(/,/g, '') === abbr)) {
             return word;
         }
 
