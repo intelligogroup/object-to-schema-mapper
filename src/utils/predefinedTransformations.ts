@@ -7,10 +7,10 @@ const titleCase = applyToOneOrMany<string, string>(titleCaseTransformer)
 const companyNameFormat = applyToOneOrMany<string, string>(companyNameTransformer)
 
 function titleCaseTransformer(str: string) {
-    if (str === undefined || str === null) {
-        throw new Error(`The value is not a string it is ${str}`);
-    }
 
+    if (!str) {
+        return str;
+    }
 
     return str.trim()
         .split(/\s/)
@@ -227,8 +227,8 @@ function joinObjectKeysToString(value, options) {
 }
 
 function companyNameTransformer(str: string) {
-    if (str === undefined || str === null) {
-        throw new Error(`The value is not a string it is ${str}`);
+    if (!str) {
+        return str;
     }
 
     const businessStructureAbbreviations = [
