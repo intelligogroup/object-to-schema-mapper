@@ -6,16 +6,17 @@ const toUpperCase = applyToOneOrMany<string, string>(str => str.toUpperCase());
 const titleCase = applyToOneOrMany<string, string>(titleCaseTransformer)
 const companyNameFormat = applyToOneOrMany<string, string>(companyNameTransformer)
 
-function titleCaseTransformer(str: string) {
+function titleCaseTransformer(str) {
 
     if (!str) {
         return str;
     }
 
     return str.trim()
-        .split(/\s/)
-        .map(word => `${word[0].toUpperCase()}${word.slice(1).toLowerCase()}`)
-        .join(' ')
+        .toLowerCase()
+        .split(/\s+/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
 }
 
 const toDate = applyToOneOrMany<string, string>(str => new Date(str).toISOString());
