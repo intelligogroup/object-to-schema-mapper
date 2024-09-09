@@ -31,7 +31,8 @@ function titleCaseTransformer(str) {
                 return word;
             }
 
-            const capitalizeWordPattern = new RegExp(`^${cleanedWord}$`, 'i');
+            const cleanedWordIWithEscapeChars = cleanedWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const capitalizeWordPattern = new RegExp(`^${cleanedWordIWithEscapeChars}$`, 'i');
             if (makeCapitalizedWords.some(w => capitalizeWordPattern.test(w))) {
                 return word.toUpperCase();
             }
