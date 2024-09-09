@@ -7,17 +7,47 @@ const titleCase = applyToOneOrMany<string, string>(titleCaseTransformer)
 const companyNameFormat = applyToOneOrMany<string, string>(companyNameTransformer)
 
 function titleCaseTransformer(str) {
+    const keepCapitalizedWords = [
+        "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"
+    ];
+
+    const makeCapitalizedWords = [
+        'AK', 'AL', 'AR', 'AS', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA', 'GU', 'HI', 'IA',
+        'ID', 'IL', 'IN', 'KS', 'KY', 'LA', 'MA', 'MD', 'ME', 'MI', 'MN', 'MO', 'MP', 'MS', 'MT',
+        'NC', 'ND', 'NE', 'NH', 'NJ', 'NM', 'NV', 'NY', 'OH', 'OK', 'OR', 'PA', 'PR', 'RI', 'SC', 'SD',
+        'TN', 'TX', 'UT', 'VA', 'VI', 'VT', 'WA', 'WI', 'WV', 'WY', "UK", "US", "USA"
+    ];
 
     if (!str) {
         return str;
     }
 
     return str.trim()
-        .toLowerCase()
         .split(/\s+/)
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .map(word => {
+            const cleanedWord = word.replace(/^[^a-zA-Z]+|[^a-zA-Z]+$/g, '');
+
+            if (keepCapitalizedWords.includes(cleanedWord)) {
+                return word;
+            }
+
+            const capitalizeWordPattern = new RegExp(`^${cleanedWord}$`, 'i');
+            if (makeCapitalizedWords.some(w => capitalizeWordPattern.test(w))) {
+                return word.toUpperCase();
+            }
+
+            let firstLetterIndex = word.search(/[a-zA-Z]/);
+            if (firstLetterIndex !== -1) {
+                return word.slice(0, firstLetterIndex) +
+                    word.charAt(firstLetterIndex).toUpperCase() +
+                    word.slice(firstLetterIndex + 1).toLowerCase();
+            }
+
+            return word;
+        })
         .join(' ');
 }
+
 
 const toDate = applyToOneOrMany<string, string>(str => new Date(str).toISOString());
 const stringToArray = applyToOneOrMany<string, string[]>((str, separator) => str.split(separator as string));
@@ -235,17 +265,15 @@ function companyNameTransformer(str: string) {
     const businessStructureAbbreviations = [
         "Col", "Corp", "Corp.", "Inc", "LC", "LLC", "LLLP", "LLP", "LP", "Ltd", "PC", "PLLC", "GP",
         "Co.", "col", "corp", "corp.", "inc", "lc", "llc", "lllp", "llp", "lp", "ltd", "pc", "pllc", "gp",
-        "co", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "UK", "US", "USA",
-        'AK', 'AL', 'AR', 'AS', 'AZ', 'CA', 'CO', 'CT', 'DC', 'DE', 'FL', 'GA', 'GU', 'HI', 'IA',
-        'ID', 'IL', 'IN', 'KS', 'KY', 'LA', 'MA', 'MD', 'ME', 'MI', 'MN', 'MO', 'MP', 'MS', 'MT',
-        'NC', 'ND', 'NE', 'NH', 'NJ', 'NM', 'NV', 'NY', 'OH', 'OK', 'OR', 'PA', 'PR', 'RI', 'SC', 'SD',
-        'TN', 'TX', 'UT', 'VA', 'VI', 'VT', 'WA', 'WI', 'WV', 'WY'
-    ];
+        "co"];
 
-    const words = str.trim().split(/\s/);
+
+    const words = str.trim().split(/\s+/);
 
     const transformedWords = words.map(word => {
-        if (businessStructureAbbreviations.some(abbr => word.replace(/,/g, '') === abbr)) {
+        const cleanedWord = word.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+
+        if (businessStructureAbbreviations.includes(cleanedWord)) {
             return word;
         }
 
