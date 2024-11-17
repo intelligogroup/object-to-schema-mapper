@@ -1,5 +1,5 @@
 import { applyToOneOrMany } from './transform';
-import { get } from 'object-path';
+import objectPath, { get } from 'object-path';
 
 const toLowerCase = applyToOneOrMany<string, string>(str => str.toLowerCase());
 const toUpperCase = applyToOneOrMany<string, string>(str => str.toUpperCase());
@@ -160,6 +160,17 @@ function arrayObjectKeyToArrayString(value, options) {
         .map(entry => get(entry, path));
 }
 
+function stringArrayToObjectArray(stringArrayValue: string[], options: { targetPath: string }): (Record<string, any> | undefined)[] | undefined {
+    if (!stringArrayValue || !Array.isArray(stringArrayValue)) {
+        return undefined
+    }
+    return stringArrayValue.map(str => {
+        const original = {}
+        objectPath.set(original, options.targetPath, str)
+        return original
+    })
+}
+
 function companyAddressType(addressType: string) {
     let value;
 
@@ -192,16 +203,19 @@ function fieldConditionMapping(value, options) {
         condition,
         conditionValue,
         valueToMap,
-        pathToMap
+        pathToMap,
+        keepOriginalValue
     }: {
         pathToCheck: string,
         condition: 'exists' | 'equals' | 'contains' | 'notEqual' | 'notContain',
         conditionValue: string,
         valueToMap: string | number,
-        pathToMap: string
+        pathToMap: string,
+        keepOriginalValue: boolean
     } = options;
 
     const valueToCheck: string = get(value, pathToCheck);
+
 
     let pass;
 
@@ -211,17 +225,16 @@ function fieldConditionMapping(value, options) {
             pass = conditionValue ? flag : !flag;
             break;
         case 'equals':
-            pass = (valueToCheck && conditionValue === valueToCheck);
+            pass = ((valueToCheck !== undefined && valueToCheck !== null) && conditionValue === valueToCheck);
             break;
         case 'contains':
-            pass = (valueToCheck && (valueToCheck || '').toLowerCase().includes(conditionValue.toLowerCase()));;
+            pass = ((valueToCheck !== undefined && valueToCheck !== null) && (valueToCheck || '').toLowerCase().includes(conditionValue.toLowerCase()));;
             break;
-
         case 'notEqual':
             pass = (valueToCheck && !(conditionValue === valueToCheck));
             break;
         case 'notContain':
-            pass = (valueToCheck && !(valueToCheck || '').toLowerCase().includes(conditionValue.toLowerCase()));;
+            pass = ((valueToCheck !== undefined && valueToCheck !== null) && !(valueToCheck || '').toLowerCase().includes(conditionValue.toLowerCase()));;
             break;
     }
 
@@ -229,7 +242,14 @@ function fieldConditionMapping(value, options) {
         pathToMap ?
             get(value, pathToMap) :
             valueToMap :
-        undefined;
+        keepOriginalValue ? value : undefined
+}
+
+function invertBooleanValue(value: boolean) {
+    if (typeof value !== 'boolean'){
+        return undefined
+    }
+    return !value
 }
 
 
@@ -301,6 +321,8 @@ export const strategies = {
         arrayObjectKeyToString,
         arrayObjectKeyToArrayString,
         fieldConditionMapping,
-        joinObjectKeysToString
+        joinObjectKeysToString,
+        invertBooleanValue,
+        stringArrayToObjectArray
     }
 }

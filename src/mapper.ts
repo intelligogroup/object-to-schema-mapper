@@ -1,10 +1,10 @@
 import objectPath from 'object-path';
 import R from 'ramda';
-import { ITarget } from './utils/types';
-import { SomeObj, Transform, TreeLeaf, } from './utils/types';
-import { unidotify, unUnidotify } from './utils/stringUtil';
-import { unique, identity } from './utils/generalUtil';
-import { postProcessCreatedObject } from './postProcessing';
+import {ITarget} from './utils/types';
+import {SomeObj, Transform, TreeLeaf,} from './utils/types';
+import {unidotify, unUnidotify} from './utils/stringUtil';
+import {unique, identity} from './utils/generalUtil';
+import {postProcessCreatedObject} from './postProcessing';
 import {
     generateTransform,
     treeLeafsToTransforms,
@@ -12,7 +12,7 @@ import {
     sortTransformsByPriority,
     pruneEmpty,
 } from './utils/transform';
-import { strategies } from './utils/predefinedTransformations';
+import {strategies} from './utils/predefinedTransformations';
 
 function mapObject(originalObj: SomeObj, transformations: Transform[]) {
     if (!transformations || transformations.length == 0) {
@@ -47,7 +47,7 @@ function treatTreeMutation(originalObj: SomeObj, treeEntries: any[], transformat
         }
 
         const nextTargets = getSubTransformations(transformations, source);
-        nextTargets.forEach(({ superTarget, transforms }) => {
+        nextTargets.forEach(({superTarget, transforms}) => {
 
             arrayValuesToSet.forEach(originalSubObj => {
 
@@ -65,25 +65,28 @@ function chooseHighestPriorityTransforms(originalObj: SomeObj) {
 
         const transformGenerator = generateTransform(transforms);
         let transform = transformGenerator.next();
-        let valueToSet = objectPath.get(originalObj, unUnidotify(transform.value.source)) || transform.value.target.defaultValue || null;
+        const got = objectPath.get(originalObj, unUnidotify(transform.value.source))
+        let valueToSet = got ?? (transform.value.target.defaultValue || null);
 
         while (
             !transform.done
-            && !(objectPath.has(originalObj, unUnidotify(transform.value.source))
+            && ((objectPath.has(originalObj, unUnidotify(transform.value.source)) == undefined && objectPath.has(originalObj, unUnidotify(transform.value.source)) == null)
                 && (!transform.value.target.predefinedTransformations?.length
                     || getValueAfterTransformations(transform.value.target, valueToSet)))
             && !transform.value.target.defaultValue
-        ) {
-            
+            ) {
+
             transform = transformGenerator.next();
-            
+
             if (transform.done) {
                 continue;
             }
 
-            valueToSet = objectPath.get(originalObj, unUnidotify(transform.value.source)) || transform.value.target.defaultValue || null;
+            const got = objectPath.get(originalObj, unUnidotify(transform.value.source))
+            valueToSet = got ?? (transform.value.target.defaultValue || null)
         }
-        return transform.done ? [] : [transform.value];
+        const returnvalue = transform.done ? [] : [transform.value];
+        return returnvalue
     }
 }
 
@@ -118,7 +121,8 @@ function getValueAfterTransformations(target: ITarget, valueToSet: SomeObj) {
                 const transformationArgs = predefinedTransformation?.transformationArgs;
                 const options = predefinedTransformation?.options;
 
-                return (strategies.predefinedTransformations[transformationName] ?? identity)(finalValue, transformationArgs || options);
+                const returnValue = (strategies.predefinedTransformations[transformationName] ?? identity)(finalValue, transformationArgs || options);
+                return returnValue
             },
             valueToSet
         );
@@ -129,7 +133,7 @@ function treatLeafsMutation(originalObj: SomeObj, treeLeafs: TreeLeaf[], targetO
     priorityTreeLeafs.forEach(([source, mappingsArray]) => {
         mappingsArray.forEach(target => {
             const value = objectPath.get(originalObj, unUnidotify(source));
-            let valueToSet = value === 0 ? value : (value || target.defaultValue || null);
+            let valueToSet = (value === 0 || value === false) ? value : (value || target.defaultValue || null);
             if (target.predefinedTransformations) {
                 valueToSet = getValueAfterTransformations(target, valueToSet)
             }
@@ -137,7 +141,7 @@ function treatLeafsMutation(originalObj: SomeObj, treeLeafs: TreeLeaf[], targetO
                 const splitTargetByArray = target.path.split('[]');
                 const valueToPush = R.isEmpty(splitTargetByArray[1])
                     ? valueToSet
-                    : { [splitTargetByArray[1].slice(1)]: valueToSet };
+                    : {[splitTargetByArray[1].slice(1)]: valueToSet};
                 objectPath.push(targetObject, splitTargetByArray[0], valueToPush);
             } else {
                 objectPath.set(targetObject, target.path, valueToSet);
@@ -180,7 +184,7 @@ function isTargetValue() {
 }
 
 function buildTree(transformations: Transform[]): SomeObj {
-    const { group: groupedTransforms, leafs: leafTransforms } = groupExtractionsByPath(transformations);
+    const {group: groupedTransforms, leafs: leafTransforms} = groupExtractionsByPath(transformations);
     return Object
         .entries(groupedTransforms)
         .reduce(
@@ -206,7 +210,7 @@ function buildTree(transformations: Transform[]): SomeObj {
 }
 
 function groupExtractionsByPath(transformations: Transform[]): { group: SomeObj, leafs: Transform[] } {
-    const [furtherProcessing, noProcessing] = R.partition(transform => transform.source.includes('[]'), transformations);
+    const [furtherProcessing, noProcessing] = R.partition(transform => transform.source?.includes('[]'), transformations);
     return {
         group: groupBySourcePrefix()(furtherProcessing),
         leafs: noProcessing
@@ -217,4 +221,4 @@ function groupBySourcePrefix() {
     return R.groupBy((transform: Transform) => transform.source.split('[]')[0]);
 }
 
-export { mapObject }
+export {mapObject}
