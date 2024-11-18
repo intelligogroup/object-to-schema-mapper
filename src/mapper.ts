@@ -1,10 +1,10 @@
 import objectPath from 'object-path';
 import R from 'ramda';
-import {ITarget} from './utils/types';
-import {SomeObj, Transform, TreeLeaf,} from './utils/types';
-import {unidotify, unUnidotify} from './utils/stringUtil';
-import {unique, identity} from './utils/generalUtil';
-import {postProcessCreatedObject} from './postProcessing';
+import { ITarget } from './utils/types';
+import { SomeObj, Transform, TreeLeaf, } from './utils/types';
+import { unidotify, unUnidotify } from './utils/stringUtil';
+import { unique, identity } from './utils/generalUtil';
+import { postProcessCreatedObject } from './postProcessing';
 import {
     generateTransform,
     treeLeafsToTransforms,
@@ -12,7 +12,8 @@ import {
     sortTransformsByPriority,
     pruneEmpty,
 } from './utils/transform';
-import {strategies} from './utils/predefinedTransformations';
+import { strategies } from './utils/predefinedTransformations';
+import isValueExists from './utils/isValueExists';
 
 function mapObject(originalObj: SomeObj, transformations: Transform[]) {
     if (!transformations || transformations.length == 0) {
@@ -47,7 +48,7 @@ function treatTreeMutation(originalObj: SomeObj, treeEntries: any[], transformat
         }
 
         const nextTargets = getSubTransformations(transformations, source);
-        nextTargets.forEach(({superTarget, transforms}) => {
+        nextTargets.forEach(({ superTarget, transforms }) => {
 
             arrayValuesToSet.forEach(originalSubObj => {
 
@@ -70,11 +71,11 @@ function chooseHighestPriorityTransforms(originalObj: SomeObj) {
 
         while (
             !transform.done
-            && ((objectPath.has(originalObj, unUnidotify(transform.value.source)) == undefined && objectPath.has(originalObj, unUnidotify(transform.value.source)) == null)
+            && !(objectPath.has(originalObj, unUnidotify(transform.value.source))
                 && (!transform.value.target.predefinedTransformations?.length
-                    || getValueAfterTransformations(transform.value.target, valueToSet)))
+                    || isValueExists(getValueAfterTransformations(transform.value.target, valueToSet))))
             && !transform.value.target.defaultValue
-            ) {
+        ) {
 
             transform = transformGenerator.next();
 
@@ -141,7 +142,7 @@ function treatLeafsMutation(originalObj: SomeObj, treeLeafs: TreeLeaf[], targetO
                 const splitTargetByArray = target.path.split('[]');
                 const valueToPush = R.isEmpty(splitTargetByArray[1])
                     ? valueToSet
-                    : {[splitTargetByArray[1].slice(1)]: valueToSet};
+                    : { [splitTargetByArray[1].slice(1)]: valueToSet };
                 objectPath.push(targetObject, splitTargetByArray[0], valueToPush);
             } else {
                 objectPath.set(targetObject, target.path, valueToSet);
@@ -184,7 +185,7 @@ function isTargetValue() {
 }
 
 function buildTree(transformations: Transform[]): SomeObj {
-    const {group: groupedTransforms, leafs: leafTransforms} = groupExtractionsByPath(transformations);
+    const { group: groupedTransforms, leafs: leafTransforms } = groupExtractionsByPath(transformations);
     return Object
         .entries(groupedTransforms)
         .reduce(
@@ -221,4 +222,4 @@ function groupBySourcePrefix() {
     return R.groupBy((transform: Transform) => transform.source.split('[]')[0]);
 }
 
-export {mapObject}
+export { mapObject }
