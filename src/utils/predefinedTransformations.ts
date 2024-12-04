@@ -1,5 +1,7 @@
 import { applyToOneOrMany } from './transform';
 import objectPath, { get } from 'object-path';
+import * as chrono from 'chrono-node';
+
 
 const toLowerCase = applyToOneOrMany<string, string>(str => str.toLowerCase());
 const toUpperCase = applyToOneOrMany<string, string>(str => str.toUpperCase());
@@ -323,6 +325,7 @@ export const strategies = {
         fieldConditionMapping,
         joinObjectKeysToString,
         invertBooleanValue,
-        stringArrayToObjectArray
+        stringArrayToObjectArray,
+        convertStringToDate: (str: string) => chrono.parseDate(str),
     }
 }
