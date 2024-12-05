@@ -248,7 +248,7 @@ function fieldConditionMapping(value, options) {
 }
 
 function invertBooleanValue(value: boolean) {
-    if (typeof value !== 'boolean'){
+    if (typeof value !== 'boolean') {
         return undefined
     }
     return !value
@@ -306,6 +306,31 @@ function companyNameTransformer(str: string) {
     return transformedWords.join(' ');
 }
 
+async function convertDotnetData(dotNetDate: string) {
+
+    if (!dotNetDate) {
+        return;
+    }
+
+    const match = dotNetDate.match(/\/Date\((-?\d+)([+-]\d{4})\)\//);
+
+    if (!match) {
+        throw new Error('Invalid date format');
+    }
+    const milliseconds = parseInt(match[1], 10);
+    const offset = match[2];
+
+    const date = new Date(milliseconds);
+
+    const offsetHours = parseInt(offset.slice(0, 3), 10); 
+    const offsetMinutes = parseInt(offset.slice(3), 10); 
+    const offsetMilliseconds = (offsetHours * 60 + offsetMinutes) * 60 * 1000;
+
+    const normalizedDate = new Date(date.getTime() - offsetMilliseconds);
+
+    return normalizedDate;
+}
+
 export const strategies = {
     predefinedTransformations: {
         toUpperCase: (str: string | string[]) => toUpperCase(str),
@@ -327,5 +352,6 @@ export const strategies = {
         invertBooleanValue,
         stringArrayToObjectArray,
         convertStringToDate: (str: string) => chrono.parseDate(str),
+        convertDotnetData
     }
 }
