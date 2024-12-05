@@ -306,13 +306,19 @@ function companyNameTransformer(str: string) {
     return transformedWords.join(' ');
 }
 
-async function convertDotnetData(dotNetDate: string) {
+async function convertFastCaseData(fastCaseDate: string) {
 
-    if (!dotNetDate) {
+    if (!fastCaseDate) {
         return;
     }
 
-    const match = dotNetDate.match(/\/Date\((-?\d+)([+-]\d{4})\)\//);
+    const jsDate = new Date(fastCaseDate);
+
+    if (jsDate instanceof Date && !isNaN(jsDate.getTime())) {
+        return jsDate;
+    }
+
+    const match = fastCaseDate.match(/\/Date\((-?\d+)([+-]\d{4})\)\//);
 
     if (!match) {
         throw new Error('Invalid date format');
@@ -352,6 +358,6 @@ export const strategies = {
         invertBooleanValue,
         stringArrayToObjectArray,
         convertStringToDate: (str: string) => chrono.parseDate(str),
-        convertDotnetData
+        convertFastCaseData
     }
 }
