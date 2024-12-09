@@ -328,13 +328,39 @@ async function convertFastCaseData(fastCaseDate: string) {
 
     const date = new Date(milliseconds);
 
-    const offsetHours = parseInt(offset.slice(0, 3), 10); 
-    const offsetMinutes = parseInt(offset.slice(3), 10); 
+    const offsetHours = parseInt(offset.slice(0, 3), 10);
+    const offsetMinutes = parseInt(offset.slice(3), 10);
     const offsetMilliseconds = (offsetHours * 60 + offsetMinutes) * 60 * 1000;
 
     const normalizedDate = new Date(date.getTime() - offsetMilliseconds);
 
     return normalizedDate;
+}
+
+function convertClearData(clearDate: string) {
+
+    if (!clearDate) {
+        return;
+    }
+
+    if (clearDate.includes(';')) {
+
+        const dates = clearDate.split(';');
+
+
+        if (dates.length === 1) {
+            return chrono.parseDate(dates[0]);
+        }
+        
+        const [earlyDate] = dates
+            .map(date => date.trim())
+            .map(date => chrono.parseDate(date))
+            .sort((a, b) => a!.getTime() - b!.getTime());
+
+        return earlyDate;
+    }
+
+    return chrono.parseDate(clearDate);
 }
 
 export const strategies = {
@@ -358,6 +384,7 @@ export const strategies = {
         invertBooleanValue,
         stringArrayToObjectArray,
         convertStringToDate: (str: string) => chrono.parseDate(str),
-        convertFastCaseData
+        convertFastCaseData,
+        convertClearData
     }
 }
