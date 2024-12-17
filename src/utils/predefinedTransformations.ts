@@ -306,7 +306,7 @@ function companyNameTransformer(str: string) {
     return transformedWords.join(' ');
 }
 
-async function convertFastCaseData(fastCaseDate: string) {
+async function convertFastCaseDate(fastCaseDate: string) {
 
     if (!fastCaseDate) {
         return;
@@ -337,7 +337,17 @@ async function convertFastCaseData(fastCaseDate: string) {
     return normalizedDate;
 }
 
-function convertClearData(clearDate: string) {
+function parseClearDate(clearDate: string): Date {
+
+    const cleanedInput = clearDate.replace(/^(ca\.?|around|approximately)\s*/i, '').trim();
+    if (String(cleanedInput).length === 4) {
+        return new Date(Number(clearDate), 0, 1)
+    }
+
+    return chrono.parseDate(clearDate) as Date;
+}
+
+function convertClearDate(clearDate: string) {
 
     if (!clearDate) {
         return;
@@ -349,18 +359,58 @@ function convertClearData(clearDate: string) {
 
 
         if (dates.length === 1) {
-            return chrono.parseDate(dates[0]);
+            return parseClearDate(dates[0]);
         }
-        
+
         const [earlyDate] = dates
             .map(date => date.trim())
-            .map(date => chrono.parseDate(date))
+            .map(date => parseClearDate(date))
             .sort((a, b) => a!.getTime() - b!.getTime());
 
         return earlyDate;
     }
 
-    return chrono.parseDate(clearDate);
+    return parseClearDate(clearDate);
+}
+
+function parseSteeleDate(steeleDate: string): Date {
+
+    if (/^\d{2}\.\d{2}\.\d{4}$/.test(steeleDate)) {
+        const [day, month, year] = steeleDate.split('.');
+        return new Date(`${year}-${month}-${day}`);
+    }
+
+    if (/^\d{4}-\d{2}$/.test(steeleDate)) {
+        return new Date(`${steeleDate}-01`); // Add day '01'
+    }
+
+    return new Date(`${steeleDate}-01-01`); // Add month '01' and day '01'
+}
+
+function convertSteeleDate(steeleDate: string) {
+
+    if (!steeleDate) {
+        return;
+    }
+
+    if (steeleDate.includes(';')) {
+
+        const dates = steeleDate.split(';');
+
+
+        if (dates.length === 1) {
+            return parseSteeleDate(steeleDate[0]);
+        }
+
+        const [earlyDate] = dates
+            .map(date => date.trim())
+            .map(date => parseSteeleDate(date))
+            .sort((a, b) => a!.getTime() - b!.getTime());
+
+        return earlyDate;
+    }
+
+    return parseSteeleDate(steeleDate);
 }
 
 export const strategies = {
@@ -384,7 +434,8 @@ export const strategies = {
         invertBooleanValue,
         stringArrayToObjectArray,
         convertStringToDate: (str: string) => chrono.parseDate(str),
-        convertFastCaseData,
-        convertClearData
+        convertFastCaseDate,
+        convertClearDate,
+        convertSteeleDate
     }
 }
