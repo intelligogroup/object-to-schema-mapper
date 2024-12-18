@@ -306,7 +306,7 @@ function companyNameTransformer(str: string) {
     return transformedWords.join(' ');
 }
 
-async function convertFastCaseDate(fastCaseDate: string) {
+function convertFastCaseDate(fastCaseDate: string) {
 
     if (!fastCaseDate) {
         return;
