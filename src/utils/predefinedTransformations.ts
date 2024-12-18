@@ -340,11 +340,21 @@ async function convertFastCaseDate(fastCaseDate: string) {
 function parseClearDate(clearDate: string): Date {
 
     const cleanedInput = clearDate.replace(/^(ca\.?|around|approximately)\s*/i, '').trim();
+
     if (String(cleanedInput).length === 4) {
         return new Date(Number(clearDate), 0, 1)
     }
 
-    return chrono.parseDate(clearDate) as Date;
+    if (/^\d{2}\.\d{2}\.\d{4}$/.test(clearDate)) {
+        const [day, month, year] = clearDate.split('.');
+        return new Date(`${year}-${month}-${day}`);
+    }
+
+    if (/^\d{4}-\d{2}$/.test(clearDate)) {
+        return new Date(`${clearDate}-01`); // Add day '01'
+    }
+
+    return new Date(clearDate);
 }
 
 function convertClearDate(clearDate: string) {
@@ -413,6 +423,42 @@ function convertSteeleDate(steeleDate: string) {
     return parseSteeleDate(steeleDate);
 }
 
+function convertSteeleDOB(steeleDOB: string) {
+
+    if (!steeleDOB) {
+        return;
+    }
+
+    if (String(steeleDOB).length === 4) {
+        return new Date(Number(steeleDOB), 0, 1)
+    }
+
+    return new Date(steeleDOB);
+}
+
+function convertClearReportDate(clearReportDate: string) {
+
+    if (!clearReportDate) {
+        return;
+    }
+
+    if (/^\d{2}\/\d{4}$/.test(clearReportDate)) {
+        const [month, year] = clearReportDate.split('/');
+        return new Date(`${year}-${month}-01`);
+    }
+
+    return new Date(clearReportDate);
+}
+
+function convertNYscrollDate(nyScrollDate: string) {
+
+    if (!nyScrollDate || nyScrollDate === '-') {
+        return;
+    }
+
+    return new Date(nyScrollDate);
+}
+
 export const strategies = {
     predefinedTransformations: {
         toUpperCase: (str: string | string[]) => toUpperCase(str),
@@ -436,6 +482,9 @@ export const strategies = {
         convertStringToDate: (str: string) => chrono.parseDate(str),
         convertFastCaseDate,
         convertClearDate,
-        convertSteeleDate
+        convertSteeleDate,
+        convertSteeleDOB,
+        convertClearReportDate,
+        convertNYscrollDate
     }
 }
