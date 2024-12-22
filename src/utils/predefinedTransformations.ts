@@ -341,10 +341,10 @@ function parseClearDate(clearDate: string): Date {
 
     const cleanedInput = clearDate.replace(/^(ca\.?|around|approximately)\s*/i, '').trim();
     if (String(cleanedInput).length === 4) {
-        return new Date(Number(clearDate), 0, 1)
+        return new Date(Number(cleanedInput), 0, 1)
     }
 
-    return chrono.parseDate(clearDate) as Date;
+    return new Date(chrono.parseDate(cleanedInput) as Date);
 }
 
 function convertClearDate(clearDate: string) {
@@ -412,6 +412,8 @@ function convertSteeleDate(steeleDate: string) {
 
     return parseSteeleDate(steeleDate);
 }
+
+// console.log(convertSteeleDate("30.05.1959"))
 
 export const strategies = {
     predefinedTransformations: {
