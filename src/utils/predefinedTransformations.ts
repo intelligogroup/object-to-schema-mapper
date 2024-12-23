@@ -459,6 +459,15 @@ function convertNYscrollDate(nyScrollDate: string) {
     return new Date(nyScrollDate);
 }
 
+function convertStringToDate(dateString: string) {
+
+    if (!dateString) {
+        return;
+    }
+
+    return new Date(chrono.parseDate(dateString) as Date);
+}
+
 export const strategies = {
     predefinedTransformations: {
         toUpperCase: (str: string | string[]) => toUpperCase(str),
@@ -479,7 +488,7 @@ export const strategies = {
         joinObjectKeysToString,
         invertBooleanValue,
         stringArrayToObjectArray,
-        convertStringToDate: (str: string) => chrono.parseDate(str),
+        convertStringToDate,
         convertFastCaseDate,
         convertClearDate,
         convertSteeleDate,
