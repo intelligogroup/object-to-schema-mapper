@@ -350,8 +350,9 @@ function parseClearDate(clearDate: string): Date {
         return new Date(`${year}-${month}-${day}`);
     }
 
-    if (/^\d{4}-\d{2}$/.test(clearDate)) {
-        return new Date(`${clearDate}-01`); // Add day '01'
+    if (/^\d{2}.\d{4}$/.test(clearDate)) {
+        const [month, year] = clearDate.split('.');
+        return new Date(`${year}-${month}-01`); // YYYY-MM-DD
     }
 
     return new Date(clearDate);
