@@ -386,16 +386,19 @@ function convertClearDate(clearDate: string) {
 
 function parseSteeleDate(steeleDate: string): Date {
 
-    if (/^\d{2}\.\d{2}\.\d{4}$/.test(steeleDate)) {
-        const [day, month, year] = steeleDate.split('.');
+    const cleanedInput = steeleDate.replaceAll('/?', '').trim();
+
+    if (/^\d{2}\.\d{2}\.\d{4}$/.test(cleanedInput)) {
+        const [day, month, year] = cleanedInput.split('.');
         return new Date(`${year}-${month}-${day}`);
     }
 
-    if (/^\d{4}-\d{2}$/.test(steeleDate)) {
-        return new Date(`${steeleDate}-01`); // Add day '01'
+    if (/^\d{2}\.\d{4}$/.test(cleanedInput)) {
+        const [month, year] = cleanedInput.split('.');
+        return new  Date(`${year}-${month}-01`);
     }
 
-    return new Date(`${steeleDate}-01-01`); // Add month '01' and day '01'
+    return new Date(`${cleanedInput}-01-01`); // Add month '01' and day '01'
 }
 
 function convertSteeleDate(steeleDate: string) {
