@@ -13,6 +13,7 @@ import {
     pruneEmpty,
 } from './utils/transform';
 import { strategies } from './utils/predefinedTransformations';
+import isValueExists from './utils/isValueExists';
 
 function mapObject(originalObj: SomeObj, transformations: Transform[]) {
     if (!transformations || transformations.length == 0) {
@@ -65,25 +66,28 @@ function chooseHighestPriorityTransforms(originalObj: SomeObj) {
 
         const transformGenerator = generateTransform(transforms);
         let transform = transformGenerator.next();
-        let valueToSet = objectPath.get(originalObj, unUnidotify(transform.value.source)) || transform.value.target.defaultValue || null;
+        const got = objectPath.get(originalObj, unUnidotify(transform.value.source))
+        let valueToSet = got ?? (transform.value.target.defaultValue || null);
 
         while (
             !transform.done
             && !(objectPath.has(originalObj, unUnidotify(transform.value.source))
                 && (!transform.value.target.predefinedTransformations?.length
-                    || getValueAfterTransformations(transform.value.target, valueToSet)))
+                    || isValueExists(getValueAfterTransformations(transform.value.target, valueToSet))))
             && !transform.value.target.defaultValue
         ) {
-            
+
             transform = transformGenerator.next();
-            
+
             if (transform.done) {
                 continue;
             }
 
-            valueToSet = objectPath.get(originalObj, unUnidotify(transform.value.source)) || transform.value.target.defaultValue || null;
+            const got = objectPath.get(originalObj, unUnidotify(transform.value.source))
+            valueToSet = got ?? (transform.value.target.defaultValue || null)
         }
-        return transform.done ? [] : [transform.value];
+        const returnvalue = transform.done ? [] : [transform.value];
+        return returnvalue
     }
 }
 
@@ -118,7 +122,8 @@ function getValueAfterTransformations(target: ITarget, valueToSet: SomeObj) {
                 const transformationArgs = predefinedTransformation?.transformationArgs;
                 const options = predefinedTransformation?.options;
 
-                return (strategies.predefinedTransformations[transformationName] ?? identity)(finalValue, transformationArgs || options);
+                const returnValue = (strategies.predefinedTransformations[transformationName] ?? identity)(finalValue, transformationArgs || options);
+                return returnValue
             },
             valueToSet
         );
@@ -129,7 +134,7 @@ function treatLeafsMutation(originalObj: SomeObj, treeLeafs: TreeLeaf[], targetO
     priorityTreeLeafs.forEach(([source, mappingsArray]) => {
         mappingsArray.forEach(target => {
             const value = objectPath.get(originalObj, unUnidotify(source));
-            let valueToSet = value === 0 ? value : (value || target.defaultValue || null);
+            let valueToSet = (value === 0 || value === false) ? value : (value || target.defaultValue || null);
             if (target.predefinedTransformations) {
                 valueToSet = getValueAfterTransformations(target, valueToSet)
             }
@@ -206,7 +211,7 @@ function buildTree(transformations: Transform[]): SomeObj {
 }
 
 function groupExtractionsByPath(transformations: Transform[]): { group: SomeObj, leafs: Transform[] } {
-    const [furtherProcessing, noProcessing] = R.partition(transform => transform.source.includes('[]'), transformations);
+    const [furtherProcessing, noProcessing] = R.partition(transform => transform.source?.includes('[]'), transformations);
     return {
         group: groupBySourcePrefix()(furtherProcessing),
         leafs: noProcessing

@@ -1,6 +1,6 @@
 {
   "name": "@intelligo.ai/object-to-schema",
-  "version": "2.2.15",
+  "version": "2.3.11",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,6 +22,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "chrono-node": "^2.7.7",
     "lodash": "^4.17.15",
     "object-path": "^0.11.4",
     "ramda": "^0.26.1"

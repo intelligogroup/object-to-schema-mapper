@@ -1,5 +1,7 @@
 import { applyToOneOrMany } from './transform';
-import { get } from 'object-path';
+import objectPath, { get } from 'object-path';
+import * as chrono from 'chrono-node';
+
 
 const toLowerCase = applyToOneOrMany<string, string>(str => str.toLowerCase());
 const toUpperCase = applyToOneOrMany<string, string>(str => str.toUpperCase());
@@ -160,6 +162,17 @@ function arrayObjectKeyToArrayString(value, options) {
         .map(entry => get(entry, path));
 }
 
+function stringArrayToObjectArray(stringArrayValue: string[], options: { targetPath: string }): (Record<string, any> | undefined)[] | undefined {
+    if (!stringArrayValue || !Array.isArray(stringArrayValue)) {
+        return undefined
+    }
+    return stringArrayValue.map(str => {
+        const original = {}
+        objectPath.set(original, options.targetPath, str)
+        return original
+    })
+}
+
 function companyAddressType(addressType: string) {
     let value;
 
@@ -192,16 +205,19 @@ function fieldConditionMapping(value, options) {
         condition,
         conditionValue,
         valueToMap,
-        pathToMap
+        pathToMap,
+        keepOriginalValue
     }: {
         pathToCheck: string,
         condition: 'exists' | 'equals' | 'contains' | 'notEqual' | 'notContain',
         conditionValue: string,
         valueToMap: string | number,
-        pathToMap: string
+        pathToMap: string,
+        keepOriginalValue: boolean
     } = options;
 
     const valueToCheck: string = get(value, pathToCheck);
+
 
     let pass;
 
@@ -211,17 +227,16 @@ function fieldConditionMapping(value, options) {
             pass = conditionValue ? flag : !flag;
             break;
         case 'equals':
-            pass = (valueToCheck && conditionValue === valueToCheck);
+            pass = ((valueToCheck !== undefined && valueToCheck !== null) && conditionValue === valueToCheck);
             break;
         case 'contains':
-            pass = (valueToCheck && (valueToCheck || '').toLowerCase().includes(conditionValue.toLowerCase()));;
+            pass = ((valueToCheck !== undefined && valueToCheck !== null) && (valueToCheck || '').toLowerCase().includes(conditionValue.toLowerCase()));;
             break;
-
         case 'notEqual':
             pass = (valueToCheck && !(conditionValue === valueToCheck));
             break;
         case 'notContain':
-            pass = (valueToCheck && !(valueToCheck || '').toLowerCase().includes(conditionValue.toLowerCase()));;
+            pass = ((valueToCheck !== undefined && valueToCheck !== null) && !(valueToCheck || '').toLowerCase().includes(conditionValue.toLowerCase()));;
             break;
     }
 
@@ -229,7 +244,14 @@ function fieldConditionMapping(value, options) {
         pathToMap ?
             get(value, pathToMap) :
             valueToMap :
-        undefined;
+        keepOriginalValue ? value : undefined
+}
+
+function invertBooleanValue(value: boolean) {
+    if (typeof value !== 'boolean') {
+        return undefined
+    }
+    return !value
 }
 
 
@@ -284,6 +306,172 @@ function companyNameTransformer(str: string) {
     return transformedWords.join(' ');
 }
 
+function convertFastCaseDate(fastCaseDate: string) {
+
+    if (!fastCaseDate) {
+        return;
+    }
+
+    const jsDate = new Date(fastCaseDate);
+
+    if (jsDate instanceof Date && !isNaN(jsDate.getTime())) {
+        return jsDate;
+    }
+
+    const match = fastCaseDate.match(/\/Date\((-?\d+)([+-]\d{4})\)\//);
+
+    if (!match) {
+        throw new Error('Invalid date format');
+    }
+    const milliseconds = parseInt(match[1], 10);
+    const offset = match[2];
+
+    const date = new Date(milliseconds);
+
+    const offsetHours = parseInt(offset.slice(0, 3), 10);
+    const offsetMinutes = parseInt(offset.slice(3), 10);
+    const offsetMilliseconds = (offsetHours * 60 + offsetMinutes) * 60 * 1000;
+
+    const normalizedDate = new Date(date.getTime() - offsetMilliseconds);
+
+    return normalizedDate;
+}
+
+function parseClearDate(clearDate: string): Date {
+
+    const cleanedInput = clearDate.replace(/^(ca\.?|around|approximately)\s*/i, '').trim();
+
+    if (String(cleanedInput).length === 4) {
+        return new Date(Number(cleanedInput), 0, 1)
+    }
+
+    if (/^\d{2}\.\d{2}\.\d{4}$/.test(clearDate)) {
+        const [day, month, year] = clearDate.split('.');
+        return new Date(`${year}-${month}-${day}`);
+    }
+
+    if (/^\d{2}.\d{4}$/.test(clearDate)) {
+        const [month, year] = clearDate.split('.');
+        return new Date(`${year}-${month}-01`); // YYYY-MM-DD
+    }
+
+    return new Date(clearDate);
+}
+
+function convertClearDate(clearDate: string) {
+
+    if (!clearDate) {
+        return;
+    }
+
+    if (clearDate.includes(';')) {
+
+        const dates = clearDate.split(';');
+
+
+        if (dates.length === 1) {
+            return parseClearDate(dates[0]);
+        }
+
+        const [earlyDate] = dates
+            .map(date => date.trim())
+            .map(date => parseClearDate(date))
+            .sort((a, b) => a!.getTime() - b!.getTime());
+
+        return earlyDate;
+    }
+
+    return parseClearDate(clearDate);
+}
+
+function parseSteeleDate(steeleDate: string): Date {
+
+    const cleanedInput = steeleDate.replaceAll('/?', '').trim();
+
+    if (/^\d{2}\.\d{2}\.\d{4}$/.test(cleanedInput)) {
+        const [day, month, year] = cleanedInput.split('.');
+        return new Date(`${year}-${month}-${day}`);
+    }
+
+    if (/^\d{2}\.\d{4}$/.test(cleanedInput)) {
+        const [month, year] = cleanedInput.split('.');
+        return new  Date(`${year}-${month}-01`);
+    }
+
+    return new Date(`${cleanedInput}-01-01`); // Add month '01' and day '01'
+}
+
+function convertSteeleDate(steeleDate: string) {
+
+    if (!steeleDate) {
+        return;
+    }
+
+    if (steeleDate.includes(';')) {
+
+        const dates = steeleDate.split(';');
+
+
+        if (dates.length === 1) {
+            return parseSteeleDate(steeleDate[0]);
+        }
+
+        const [earlyDate] = dates
+            .map(date => date.trim())
+            .map(date => parseSteeleDate(date))
+            .sort((a, b) => a!.getTime() - b!.getTime());
+
+        return earlyDate;
+    }
+
+    return parseSteeleDate(steeleDate);
+}
+
+function convertSteeleDOB(steeleDOB: string) {
+
+    if (!steeleDOB) {
+        return;
+    }
+
+    if (String(steeleDOB).length === 4) {
+        return new Date(Number(steeleDOB), 0, 1)
+    }
+
+    return new Date(steeleDOB);
+}
+
+function convertClearReportDate(clearReportDate: string) {
+
+    if (!clearReportDate) {
+        return;
+    }
+
+    if (/^\d{2}\/\d{4}$/.test(clearReportDate)) {
+        const [month, year] = clearReportDate.split('/');
+        return new Date(`${year}-${month}-01`);
+    }
+
+    return new Date(clearReportDate);
+}
+
+function convertNYscrollDate(nyScrollDate: string) {
+
+    if (!nyScrollDate || nyScrollDate === '-') {
+        return;
+    }
+
+    return new Date(nyScrollDate);
+}
+
+function convertStringToDate(dateString: string) {
+
+    if (!dateString) {
+        return;
+    }
+
+    return new Date(chrono.parseDate(dateString) as Date);
+}
+
 export const strategies = {
     predefinedTransformations: {
         toUpperCase: (str: string | string[]) => toUpperCase(str),
@@ -301,6 +489,15 @@ export const strategies = {
         arrayObjectKeyToString,
         arrayObjectKeyToArrayString,
         fieldConditionMapping,
-        joinObjectKeysToString
+        joinObjectKeysToString,
+        invertBooleanValue,
+        stringArrayToObjectArray,
+        convertStringToDate,
+        convertFastCaseDate,
+        convertClearDate,
+        convertSteeleDate,
+        convertSteeleDOB,
+        convertClearReportDate,
+        convertNYscrollDate
     }
 }
