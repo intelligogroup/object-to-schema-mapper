@@ -468,8 +468,14 @@ function convertStringToDate(dateString: string) {
     if (!dateString) {
         return;
     }
+    
+    const formatDate = chrono.parseDate(dateString);
 
-    return new Date(chrono.parseDate(dateString) as Date);
+    if (!formatDate) {
+        throw new Error('Invalid date format');
+    }
+
+    return formatDate;
 }
 
 export const strategies = {
