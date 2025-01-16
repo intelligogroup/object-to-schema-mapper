@@ -395,7 +395,7 @@ function parseSteeleDate(steeleDate: string): Date {
 
     if (/^\d{2}\.\d{4}$/.test(cleanedInput)) {
         const [month, year] = cleanedInput.split('.');
-        return new  Date(`${year}-${month}-01`);
+        return new Date(`${year}-${month}-01`);
     }
 
     return new Date(`${cleanedInput}-01-01`); // Add month '01' and day '01'
@@ -468,7 +468,7 @@ function convertStringToDate(dateString: string) {
     if (!dateString) {
         return;
     }
-    
+
     const formatDate = chrono.parseDate(dateString);
 
     if (!formatDate) {
@@ -476,6 +476,32 @@ function convertStringToDate(dateString: string) {
     }
 
     return formatDate;
+}
+
+function stringCleanup(value: string, options: { pattern: string, replacement: string }[]) {
+
+    let cleanedValue = value;
+
+    for (const { pattern, replacement } of options) {
+        cleanedValue = cleanedValue.replace(new RegExp(pattern, 'g'), replacement);
+    }
+
+    return cleanedValue;
+}
+
+function analystCollectionLegalConvertDate(value: string) {
+
+    if (!value) {
+        return;
+    }
+
+    const match = value.match(/^\d{2}\/\d{2}\/\d{4}/);
+
+    if (!match?.length) {
+        throw new Error('Invalid date format');
+    }
+
+    return new Date(match[0]);
 }
 
 export const strategies = {
@@ -504,6 +530,8 @@ export const strategies = {
         convertSteeleDate,
         convertSteeleDOB,
         convertClearReportDate,
-        convertNYscrollDate
+        convertNYscrollDate,
+        stringCleanup,
+        analystCollectionLegalConvertDate
     }
 }
