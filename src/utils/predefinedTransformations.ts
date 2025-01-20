@@ -384,6 +384,70 @@ function convertClearDate(clearDate: string) {
     return parseClearDate(clearDate);
 }
 
+function parseSteeleDOB(steeleDOB: string): Date | undefined {
+
+    if (!steeleDOB) {
+        return;
+    }
+
+    // Normalize common cases of "approximately"
+    const approxRegex = /^(ca\.|approximately|approx)\s*/ig;
+    const cleanInput = steeleDOB.replace(approxRegex, "").trim();
+
+    // Match full date with dashes, dots, or slashes
+    const fullDateMatch = cleanInput.match(/^(\d{1,4})[-./](\d{1,2})[-./](\d{1,4})$/);
+    if (fullDateMatch) {
+        const year = fullDateMatch[1].length === 4 ? parseInt(fullDateMatch[1]) : parseInt(fullDateMatch[3]);
+        const month = parseInt(fullDateMatch[2]) - 1;
+        const day = fullDateMatch[1].length !== 4 ? parseInt(fullDateMatch[1]) : parseInt(fullDateMatch[3]);
+
+        if (year && month >= 0 && day) {
+            return new Date(year, month, day);
+        }
+    }
+
+    // Match year-month (e.g., 05.1952 or 05/1952)
+    const yearMonthMatch = cleanInput.match(/^(\d{1,2})[-./](\d{4})$/);
+
+    if (yearMonthMatch) {
+        const year = parseInt(yearMonthMatch[2]);
+        const month = parseInt(yearMonthMatch[1]) - 1;
+        if (year && month >= 0) {
+            return new Date(year, month, 1);
+        }
+    }
+
+    // Match only year (e.g., 1963)
+    const yearMatch = cleanInput.match(/^(\d{4})$/);
+    if (yearMatch) {
+        const year = parseInt(yearMatch[1]);
+        return new Date(year, 0, 1);
+    }
+
+    // Match compact YYYYMMDD (e.g., 19800704)
+    const compactDateMatch = cleanInput.match(/^(\d{4})(\d{2})(\d{2})$/);
+
+    if (compactDateMatch) {
+        const year = parseInt(compactDateMatch[1]);
+        const month = parseInt(compactDateMatch[2]) - 1;
+        const day = parseInt(compactDateMatch[3]);
+
+        if (year && month >= 0 && day) {
+            return new Date(year, month, day);
+        }
+    }
+
+    // Handle case of "/?/?/1963" or similar ambiguous cases
+    const ambiguousYearMatch = cleanInput.match(/\/?\/?\/?(\d{4})$/);
+    if (ambiguousYearMatch) {
+        const year = parseInt(ambiguousYearMatch[1]);
+        return new Date(year, 0, 1);
+    }
+
+
+    return new Date(chrono.parseDate(cleanInput) as Date);
+}
+
 function parseSteeleDate(steeleDate: string): Date {
 
     const cleanedInput = steeleDate.replaceAll('/?', '').trim();
@@ -433,11 +497,23 @@ function convertSteeleDOB(steeleDOB: string) {
         return;
     }
 
-    if (String(steeleDOB).length === 4) {
-        return new Date(Number(steeleDOB), 0, 1)
+    if (steeleDOB.includes(';')) {
+
+        const dates = steeleDOB.split(';');
+
+        if (dates.length === 1) {
+            return new Date(dates[0]);
+        }
+
+        const [latestDate] = dates
+            .map(date => date.trim())
+            .map(date => parseSteeleDOB(date))
+            .sort((a, b) => b!.getTime() - a!.getTime());
+
+        return latestDate;
     }
 
-    return new Date(steeleDOB);
+    return parseSteeleDOB(steeleDOB);
 }
 
 function convertClearReportDate(clearReportDate: string) {
@@ -528,10 +604,11 @@ export const strategies = {
         convertFastCaseDate,
         convertClearDate,
         convertSteeleDate,
-        convertSteeleDOB,
         convertClearReportDate,
         convertNYscrollDate,
         stringCleanup,
-        analystCollectionLegalConvertDate
+        analystCollectionLegalConvertDate,
+        convertSteeleDOB
     }
 }
+
