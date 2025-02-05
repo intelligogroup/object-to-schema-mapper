@@ -448,9 +448,17 @@ function parseSteeleDOB(steeleDOB: string): Date | undefined {
     return new Date(chrono.parseDate(cleanInput) as Date);
 }
 
-function parseSteeleDate(steeleDate: string): Date {
+function parseSteeleDate(steeleDate: string): Date | undefined {
 
-    const cleanedInput = steeleDate.replaceAll('/?', '').trim();
+    const cleanedInput = steeleDate.replaceAll(/\/\?|-00/g, '').trim();
+
+    if (!cleanedInput || cleanedInput === '0000') {
+        return;
+    }
+
+    if (!/\d/.test(cleanedInput)) {
+        return;
+    }
 
     if (/^\d{2}\.\d{2}\.\d{4}$/.test(cleanedInput)) {
         const [day, month, year] = cleanedInput.split('.');
@@ -541,11 +549,13 @@ function convertNYscrollDate(nyScrollDate: string) {
 
 function convertStringToDate(dateString: string) {
 
-    if (!dateString) {
+    if (!dateString || dateString === 'XX/XX/XXXX') {
         return;
     }
 
-    const formatDate = chrono.parseDate(dateString);
+    const formatDate = chrono.parseDate(dateString
+        .replace(/live/gi, '')
+    );
 
     if (!formatDate) {
         throw new Error('Invalid date format');
@@ -611,4 +621,3 @@ export const strategies = {
         convertSteeleDOB
     }
 }
-
