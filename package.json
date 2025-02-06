@@ -1,6 +1,6 @@
 {
   "name": "@intelligo.ai/object-to-schema",
-  "version": "2.3.16",
+  "version": "2.3.17",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

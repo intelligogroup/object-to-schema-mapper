@@ -622,7 +622,7 @@ function stringCleanup(value: string, options: { pattern: string, replacement: s
     let cleanedValue = value;
 
     for (const { pattern, replacement } of options) {
-        cleanedValue = cleanedValue.replaceAll(pattern, replacement);
+        cleanedValue = cleanedValue.toLowerCase().replaceAll(pattern.toLowerCase(), replacement);
     }
 
     return cleanedValue;
