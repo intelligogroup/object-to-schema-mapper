@@ -447,8 +447,13 @@ function parseSteeleDOB(steeleDOB: string): Date | undefined {
         return new Date(year, 0, 1);
     }
 
+    const parseDate = chrono.parseDate(cleanInput);
 
-    return new Date(chrono.parseDate(cleanInput) as Date);
+    if (!parseDate) {
+        throw new Error('Invalid date format');
+    }
+
+    return new Date(parseDate);
 }
 
 function parseSteeleDate(steeleDate: string): Date | undefined {
