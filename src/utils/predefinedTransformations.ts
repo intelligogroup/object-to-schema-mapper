@@ -1,7 +1,10 @@
 import { applyToOneOrMany } from './transform';
 import objectPath, { get } from 'object-path';
 import * as chrono from 'chrono-node';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 
+dayjs.extend(customParseFormat);
 
 const toLowerCase = applyToOneOrMany<string, string>(str => str.toLowerCase());
 const toUpperCase = applyToOneOrMany<string, string>(str => str.toUpperCase());
@@ -547,21 +550,71 @@ function convertNYscrollDate(nyScrollDate: string) {
     return new Date(nyScrollDate);
 }
 
-function convertStringToDate(dateString: string) {
+function convertStringToDate(dateString: string, options: {
+    formats?: string[],
+    ignoreFormats?: string[],
+    unixTimestamp?: boolean,
+    cleanPatterns?: string[]
+} = {}) {
 
-    if (!dateString || dateString === 'XX/XX/XXXX') {
+    if (options.unixTimestamp) {
+        return new Date(Number(dateString) * 1000)
+    }
+
+    const ignoreFormats = [
+        ...(options.ignoreFormats || []),
+        'XX/XX/XXXX',
+        '0000'
+    ];
+
+    const cleanPatterns = [
+        ...(options.cleanPatterns || []),
+        '-00',
+        '?/',
+        'live'
+    ];
+
+    const formats = [
+        ...(options.formats || []),
+        'YYYY-MM',
+        'YYYY'
+    ];
+
+    if (ignoreFormats.includes(dateString)) {
         return;
     }
 
-    const formatDate = chrono.parseDate(dateString
-        .replace(/live/gi, '')
-    );
+    const cleanedInput = stringCleanup(dateString, cleanPatterns.map(pattern => ({ pattern, replacement: '' })));
 
-    if (!formatDate) {
-        throw new Error('Invalid date format');
+    if (!cleanedInput) {
+        return;
     }
 
-    return formatDate;
+    if (cleanedInput.length === 4) {
+        return new Date(Number(cleanedInput), 0, 1);
+    }
+
+    if (!cleanedInput) {
+        return;
+    }
+
+    if (ignoreFormats.includes(cleanedInput)) {
+        return;
+    }
+
+    const parsedDate = dayjs(cleanedInput, formats, true);
+
+    if (parsedDate.isValid()) {
+        return parsedDate.toDate();
+    }
+
+    const formatDate = chrono.parseDate(cleanedInput);
+
+    if (formatDate) {
+        return formatDate;
+    }
+
+    throw new Error('Invalid date format');
 }
 
 function stringCleanup(value: string, options: { pattern: string, replacement: string }[]) {
@@ -569,7 +622,7 @@ function stringCleanup(value: string, options: { pattern: string, replacement: s
     let cleanedValue = value;
 
     for (const { pattern, replacement } of options) {
-        cleanedValue = cleanedValue.replace(new RegExp(pattern, 'g'), replacement);
+        cleanedValue = cleanedValue.replaceAll(pattern, replacement);
     }
 
     return cleanedValue;
