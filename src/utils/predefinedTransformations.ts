@@ -6,6 +6,18 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 dayjs.extend(customParseFormat);
 
+
+type TConvertStringToDateOptions = {
+    formats?: string[],
+    ignoreFormats?: string[],
+    unixTimestamp?: boolean,
+    cleanPatterns?: string[],
+    supportMultipleDates?: {
+        separators: string[],
+        selectDate: 'earliest' | 'latest'
+    }
+}
+
 const toLowerCase = applyToOneOrMany<string, string>(str => str.toLowerCase());
 const toUpperCase = applyToOneOrMany<string, string>(str => str.toUpperCase());
 const titleCase = applyToOneOrMany<string, string>(titleCaseTransformer)
@@ -555,12 +567,7 @@ function convertNYscrollDate(nyScrollDate: string) {
     return new Date(nyScrollDate);
 }
 
-function convertStringToDate(dateString: string, options: {
-    formats?: string[],
-    ignoreFormats?: string[],
-    unixTimestamp?: boolean,
-    cleanPatterns?: string[]
-} = {}) {
+function parseStringToDate(dateString: string, options: TConvertStringToDateOptions) {
 
     if (options.unixTimestamp) {
         return new Date(Number(dateString) * 1000)
@@ -576,7 +583,12 @@ function convertStringToDate(dateString: string, options: {
         ...(options.cleanPatterns || []),
         '-00',
         '?/',
-        'live'
+        'live',
+        'ca.',
+        'Circa',
+        '00/',
+        'APPROXIMATELY',
+        'N/A'
     ];
 
     const formats = [
@@ -621,6 +633,52 @@ function convertStringToDate(dateString: string, options: {
 
     throw new Error('Invalid date format');
 }
+
+function convertStringToDate(dateString: string, options: TConvertStringToDateOptions = {}) {
+
+    const dates: string[] = [];
+
+    if (!dateString) {
+        return;
+    }
+
+    if (options.supportMultipleDates) {
+        const { separators } = options.supportMultipleDates;
+
+        for (const separator of separators) {
+
+            const datesTemp = dateString.split(new RegExp(separator, 'g'));
+
+            if (datesTemp.length > 1) {
+                dates.push(...datesTemp);
+                break;
+            }
+        }
+
+        if (!dates.length) {
+            dates.push(dateString);
+        }
+    }
+
+    if (dates.length === 1) {
+        return parseStringToDate(dates[0], options);
+    }
+
+
+    const [relevantDate] = dates
+        .map(date => parseStringToDate(date, options))
+        .filter(date => date)
+        .sort((a, b) => options.supportMultipleDates?.selectDate === 'earliest' ? a!.getTime() - b!.getTime() : b!.getTime() - a!.getTime());
+
+    return relevantDate;
+}
+
+// console.log(convertStringToDate('March 29, 1943, October 4, 1950, November 11, 1950', {
+//     supportMultipleDates: {
+//         separators: [',\\s+(?=(?:[A-Za-z]+\\s+\\d{1,2},\\s+\\d{4})|(?:\\d{4}-\\d{2}-\\d{2}))', ','],
+//         selectDate: 'earliest'
+//     }
+// }))
 
 function stringCleanup(value: string, options: { pattern: string, replacement: string }[]) {
 
