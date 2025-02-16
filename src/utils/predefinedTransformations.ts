@@ -654,10 +654,10 @@ function convertStringToDate(dateString: string, options: TConvertStringToDateOp
                 break;
             }
         }
+    }
 
-        if (!dates.length) {
-            dates.push(dateString);
-        }
+    if (!dates.length) {
+        dates.push(dateString);
     }
 
     if (dates.length === 1) {
@@ -673,7 +673,7 @@ function convertStringToDate(dateString: string, options: TConvertStringToDateOp
     return relevantDate;
 }
 
-// console.log(convertStringToDate('March 29, 1943, October 4, 1950, November 11, 1950', {
+// console.log(convertStringToDate('1990-01-01', {
 //     supportMultipleDates: {
 //         separators: [',\\s+(?=(?:[A-Za-z]+\\s+\\d{1,2},\\s+\\d{4})|(?:\\d{4}-\\d{2}-\\d{2}))', ','],
 //         selectDate: 'earliest'
