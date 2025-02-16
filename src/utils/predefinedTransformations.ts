@@ -593,6 +593,8 @@ function parseStringToDate(dateString: string, options: TConvertStringToDateOpti
 
     const formats = [
         ...(options.formats || []),
+        'YYYYMMDD',
+        'MM.YYYY',
         'YYYY-MM',
         'YYYY'
     ];
@@ -642,17 +644,22 @@ function convertStringToDate(dateString: string, options: TConvertStringToDateOp
         return;
     }
 
-    if (options.supportMultipleDates) {
-        const { separators } = options.supportMultipleDates;
+    const separators = [
+        ...(options.supportMultipleDates?.separators || []),
+        '[a-d]\\)',
+        ',\\s*(\\d{4})',
+        ';\\s*(\\d{4})',
+        '(\\d{4})\\s+to\\s+(\\d{4})',
+        ',\\s+(?=(?:[A-Za-z]+\\s+\\d{1,2},\\s+\\d{4})|(?:\\d{4}-\\d{2}-\\d{2}))'
+    ];
 
-        for (const separator of separators) {
+    for (const separator of separators) {
 
-            const datesTemp = dateString.split(new RegExp(separator, 'g'));
+        const datesTemp = dateString.split(new RegExp(separator, 'g'));
 
-            if (datesTemp.length > 1) {
-                dates.push(...datesTemp);
-                break;
-            }
+        if (datesTemp.length > 1) {
+            dates.push(...datesTemp);
+            break;
         }
     }
 
@@ -673,12 +680,13 @@ function convertStringToDate(dateString: string, options: TConvertStringToDateOp
     return relevantDate;
 }
 
-// console.log(convertStringToDate('circa 1990', {
-//     // supportMultipleDates: {
-//     //     separators: [',\\s+(?=(?:[A-Za-z]+\\s+\\d{1,2},\\s+\\d{4})|(?:\\d{4}-\\d{2}-\\d{2}))', ','],
-//     //     selectDate: 'earliest'
-//     // }
-// }))
+console.log(convertStringToDate('1975 to 1972', {
+    // formats: ['YYYYMMDD'],
+    // supportMultipleDates: {
+    //     separators: ['[a-d]\\)'],
+    //     selectDate: 'earliest'
+    // }
+}))
 
 function stringCleanup(value: string, options: { pattern: string, replacement: string }[]) {
 
