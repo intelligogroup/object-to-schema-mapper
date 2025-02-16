@@ -601,7 +601,7 @@ function parseStringToDate(dateString: string, options: TConvertStringToDateOpti
         return;
     }
 
-    const cleanedInput = stringCleanup(dateString, cleanPatterns.map(pattern => ({ pattern, replacement: '' })));
+    const cleanedInput = stringCleanup(dateString, cleanPatterns.map(pattern => ({ pattern, replacement: '' }))).trim();
 
     if (!cleanedInput) {
         return;
@@ -673,11 +673,11 @@ function convertStringToDate(dateString: string, options: TConvertStringToDateOp
     return relevantDate;
 }
 
-// console.log(convertStringToDate('1990-01-01', {
-//     supportMultipleDates: {
-//         separators: [',\\s+(?=(?:[A-Za-z]+\\s+\\d{1,2},\\s+\\d{4})|(?:\\d{4}-\\d{2}-\\d{2}))', ','],
-//         selectDate: 'earliest'
-//     }
+// console.log(convertStringToDate('circa 1990', {
+//     // supportMultipleDates: {
+//     //     separators: [',\\s+(?=(?:[A-Za-z]+\\s+\\d{1,2},\\s+\\d{4})|(?:\\d{4}-\\d{2}-\\d{2}))', ','],
+//     //     selectDate: 'earliest'
+//     // }
 // }))
 
 function stringCleanup(value: string, options: { pattern: string, replacement: string }[]) {
