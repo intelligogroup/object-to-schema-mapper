@@ -22,7 +22,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "chrono-node": "^2.7.7",
+    "chrono-node": "^2.7.8",
     "dayjs": "^1.11.13",
     "lodash": "^4.17.15",
     "object-path": "^0.11.4",
