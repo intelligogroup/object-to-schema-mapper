@@ -1,5 +1,5 @@
 {
-  "name": "@intelligo.ai/object-to-schema",
+  "name": "@intelligogroup/object-to-schema",
   "version": "2.3.22",
   "description": "",
   "main": "dist/index.js",
@@ -8,6 +8,13 @@
     "build": "npx tsc",
     "prepublish": "npm run build",
     "test": "jest"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/intelligogroup/object-to-schema-mapper"
   },
   "author": "",
   "license": "ISC",
